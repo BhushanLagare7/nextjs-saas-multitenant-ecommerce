@@ -6,7 +6,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import z from "zod";
 
@@ -34,14 +34,19 @@ export const SignInView = () => {
   const router = useRouter();
 
   const trpc = useTRPC();
-  const login = useMutation(trpc.auth.login.mutationOptions({
-    onError: (error) => {
-      toast.error(error.message);
-    },
-    onSuccess: () => {
-      router.push("/");
-    },
-  }));
+  const queryClient = useQueryClient();
+
+  const login = useMutation(
+    trpc.auth.login.mutationOptions({
+      onError: (error) => {
+        toast.error(error.message);
+      },
+      onSuccess: async () => {
+        await queryClient.invalidateQueries(trpc.auth.session.queryFilter());
+        router.push("/");
+      },
+    }),
+  );
 
   const form = useForm<z.infer<typeof loginSchema>>({
     mode: "all",
@@ -53,26 +58,28 @@ export const SignInView = () => {
   });
 
   const onSubmit = (values: z.infer<typeof loginSchema>) => {
-    login.mutate(values)
-  }
+    login.mutate(values);
+  };
 
   return (
     <div className="grid grid-cols-1 lg:grid-cols-5">
-      <div className="bg-[#F4F4F0] h-screen w-full lg:col-span-3 overflow-y-auto">
+      <div className="h-screen w-full overflow-y-auto bg-[#F4F4F0] lg:col-span-3">
         <Form {...form}>
           <form
             className="flex flex-col gap-8 p-4 lg:p-16"
             onSubmit={form.handleSubmit(onSubmit)}
           >
-            <div className="flex items-center justify-between mb-8">
+            <div className="mb-8 flex items-center justify-between">
               <Link href="/">
-                <span className={cn("text-2xl font-semibold", poppins.className)}>
+                <span
+                  className={cn("text-2xl font-semibold", poppins.className)}
+                >
                   funroad
                 </span>
               </Link>
               <Button
                 asChild
-                className="text-base border-none underline"
+                className="border-none text-base underline"
                 size="sm"
                 variant="ghost"
               >
@@ -81,9 +88,7 @@ export const SignInView = () => {
                 </Link>
               </Button>
             </div>
-            <h1 className="text-4xl font-medium">
-              Welcome back to Funroad.
-            </h1>
+            <h1 className="text-4xl font-medium">Welcome back to Funroad.</h1>
             <FormField
               name="email"
               render={({ field }) => (
@@ -109,7 +114,7 @@ export const SignInView = () => {
               )}
             />
             <Button
-              className="bg-black text-white hover:bg-pink-400 hover:text-primary"
+              className="hover:text-primary bg-black text-white hover:bg-pink-400"
               disabled={login.isPending}
               size="lg"
               type="submit"
@@ -121,12 +126,12 @@ export const SignInView = () => {
         </Form>
       </div>
       <div
-        className="h-screen w-full lg:col-span-2 hidden lg:block"
+        className="hidden h-screen w-full lg:col-span-2 lg:block"
         style={{
           backgroundImage: "url('/auth-bg.png')",
           backgroundSize: "cover",
           backgroundPosition: "center",
-         }}
+        }}
       />
     </div>
   );
