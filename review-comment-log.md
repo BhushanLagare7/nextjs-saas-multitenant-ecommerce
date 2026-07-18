@@ -207,7 +207,7 @@ This log tracks code review comments generated during development and the subseq
 
 #### Inline Comments
 
-- [ ] **[src/app/(app)/(home)/[category]/page.tsx](src/app/(app)/(home)/[category]/page.tsx) & [src/app/(app)/(home)/[category]/[subcategory]/page.tsx](src/app/(app)/(home)/[category]/[subcategory]/page.tsx) (Lines 20-33)**
+- [ ] **[src/app/(app)/(home)/[category]/page.tsx](<src/app/(app)/(home)/[category]/page.tsx>) & [src/app/(app)/(home)/[category]/[subcategory]/page.tsx](<src/app/(app)/(home)/[category]/[subcategory]/page.tsx>) (Lines 20-33)**
   - _Issue:_ Fire-and-forget prefetch query does not block dehydrate.
   - _Action:_ Await queryClient.prefetchQuery before calling dehydrate, replacing the void invocation while preserving the existing query options and hydration flow.
 - [ ] **[src/collections/Products.ts](src/collections/Products.ts) (Lines 16-22)**
@@ -219,7 +219,7 @@ This log tracks code review comments generated during development and the subseq
 
 #### Nitpick Comments
 
-- [ ] **[src/app/(app)/(home)/[category]/[subcategory]/page.tsx](src/app/(app)/(home)/[category]/[subcategory]/page.tsx) (Lines 11-15)**
+- [ ] **[src/app/(app)/(home)/[category]/[subcategory]/page.tsx](<src/app/(app)/(home)/[category]/[subcategory]/page.tsx>) (Lines 11-15)**
   - _Issue:_ Props interface's params type is missing category string.
   - _Action:_ Update the Props interface’s params type to include the category string alongside subcategory, matching the parameters exposed by the [category]/[subcategory] route.
 - [ ] **[src/modules/products/server/procedures.ts](src/modules/products/server/procedures.ts) (Line 30)**
@@ -262,3 +262,41 @@ This log tracks code review comments generated during development and the subseq
   - _Issue:_ Inner map callback parameter in categoriesData transformation uses a conflicting name.
   - _Action:_ Rename the inner map callback parameter in the categoriesData transformation to a distinct name, while keeping the outer doc parameter and all mapping behavior unchanged.
 
+---
+
+### 🔗 PR-13: feat(products): add tag filtering and sorting
+
+- **Commit SHA:** `d147333c1e98e92fb393c654787d303e7fafa9f0`
+
+#### Inline Comments
+
+- [ ] **[src/app/(app)/(home)/[category]/page.tsx](<src/app/(app)/(home)/[category]/page.tsx>) (Lines 26-32)**
+  - _Issue:_ Products query prefetch is not awaited before dehydrating the query client in the server-rendering flow.
+  - _Action:_ Await the prefetchQuery call in the page’s server-rendering flow instead of discarding its promise, ensuring the products query completes before dehydrate serializes queryClient. Keep the existing trpc.products.getMany.queryOptions configuration, including category and filters, unchanged.
+- [ ] **[src/collections/Tags.ts](src/collections/Tags.ts) (Lines 15-20)**
+  - _Issue:_ Products relationship field is stored as an independent array instead of being a derived relationship.
+  - _Action:_ Replace the products relationship field in the Tags collection with a Payload join field that targets the Products collection’s tag relationship, so the inverse association is derived rather than stored as a second independent array. Preserve the products field name and hasMany behavior while configuring the join against the existing Products relationship symbol.
+- [ ] **[src/modules/products/server/procedures.ts](src/modules/products/server/procedures.ts) (Lines 28-30)**
+  - _Issue:_ The hot_and_new branch in the sort selection logic does not sort by descending createdAt.
+  - _Action:_ Update the hot_and_new branch in the sort selection logic to assign descending createdAt ordering with -createdAt, so newest products appear first while preserving all other sort behavior.
+- [ ] **[src/modules/products/ui/components/product-filters.tsx](src/modules/products/ui/components/product-filters.tsx) (Lines 64-66)**
+  - _Issue:_ Stale filters spread in the onChange function prevents nuqs from merging rapid updates safely.
+  - _Action:_ Update the onChange function to pass only the changed filter key and value to setFilters, removing the stale ...filters spread so nuqs can merge rapid updates safely.
+- [ ] **[src/modules/products/ui/components/tags-filter.tsx](src/modules/products/ui/components/tags-filter.tsx) (Lines 47-62)**
+  - _Issue:_ Inner map in tag list rendering is missing a stable page-specific key, and clickable div wrapper lacks semantic structure.
+  - _Action:_ Update the tag list rendering around data.pages.map by wrapping each page’s inner map in a keyed fragment, using a stable page-specific key. Replace the clickable div row with a native label and remove its wrapper-level onClick, relying on the nested Checkbox interaction; ensure Checkbox.checked always receives a boolean fallback when value is undefined.
+- [ ] **[src/modules/tags/server/procedures.ts](src/modules/tags/server/procedures.ts) (Lines 9-12)**
+  - _Issue:_ Pagination input schema is missing integer constraints and safe boundary checks.
+  - _Action:_ Update the pagination input schema’s cursor and limit fields to require integer values and enforce safe minimum/maximum bounds, using Zod 4’s int(), min(), and max() validators. Preserve DEFAULT_LIMIT as the limit default while applying the project’s established pagination boundaries to prevent oversized database requests.
+
+#### Outside Diff Comments
+
+- [ ] **[src/modules/products/ui/components/product-filters.tsx](src/modules/products/ui/components/product-filters.tsx) (Lines 27-33)**
+  - _Issue:_ Clickable div in the accordion header is not accessible via keyboard.
+  - _Action:_ Replace the clickable div in the accordion header with a native button element, preserving the existing title, Icon, styling, and setIsOpen toggle behavior. Ensure the button remains keyboard-focusable and activates the filter expansion through standard keyboard interaction.
+
+#### Nitpick Comments
+
+- [ ] **[src/modules/tags/server/procedures.ts](src/modules/tags/server/procedures.ts) (Lines 15-19)**
+  - _Issue:_ Tags database query results are not explicitly sorted alphabetically.
+  - _Action:_ Update the database query in the tags endpoint to explicitly sort results alphabetically by the `name` field, while preserving the existing pagination inputs and response flow.
