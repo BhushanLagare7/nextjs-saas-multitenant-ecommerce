@@ -3,8 +3,9 @@ import "./globals.css";
 import type { Metadata } from "next";
 import { DM_Sans } from "next/font/google";
 
+import { NuqsAdapter } from "nuqs/adapters/next/app";
+
 import { Toaster } from "@/components/ui/sonner";
-import { cn } from "@/lib/utils";
 import { TRPCReactProvider } from "@/trpc/client";
 
 const dmSans = DM_Sans({
@@ -30,15 +31,14 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html
-      className={cn("h-full", "antialiased", "font-sans", dmSans.variable)}
-      lang="en"
-    >
-      <body className="flex min-h-full flex-col">
-        <TRPCReactProvider>
-          {children}
-          <Toaster />
-        </TRPCReactProvider>
+    <html lang="en">
+      <body className={`${dmSans.className} antialiased`}>
+        <NuqsAdapter>
+          <TRPCReactProvider>
+            {children}
+            <Toaster />
+          </TRPCReactProvider>
+        </NuqsAdapter>
       </body>
     </html>
   );
