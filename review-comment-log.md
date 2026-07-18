@@ -199,4 +199,32 @@ This log tracks code review comments generated during development and the subseq
   - _Issue:_ Icon-only button lacking accessible name.
   - _Action:_ Add an accessible name to the icon-only Button rendering ListFilterIcon by providing a descriptive aria-label or visually hidden text, while preserving its existing styling and onClick behavior.
 
+---
 
+### 🔗 PR-11: feat(products): add collection and query by category
+
+- **Commit SHA:** `9da39f46df22d009dc7d30cfcfb75a787327f61f`
+
+#### Inline Comments
+
+- [ ] **[src/app/(app)/(home)/[category]/page.tsx](src/app/(app)/(home)/[category]/page.tsx) & [src/app/(app)/(home)/[category]/[subcategory]/page.tsx](src/app/(app)/(home)/[category]/[subcategory]/page.tsx) (Lines 20-33)**
+  - _Issue:_ Fire-and-forget prefetch query does not block dehydrate.
+  - _Action:_ Await queryClient.prefetchQuery before calling dehydrate, replacing the void invocation while preserving the existing query options and hydration flow.
+- [ ] **[src/collections/Products.ts](src/collections/Products.ts) (Lines 16-22)**
+  - _Issue:_ Missing minimum validation on price field.
+  - _Action:_ Update the price field configuration in Products to add a minimum validation constraint of 0, ensuring users and integrations cannot save negative prices while preserving the existing required number-field behavior.
+- [ ] **[src/modules/products/server/procedures.ts](src/modules/products/server/procedures.ts) (Lines 41-53)**
+  - _Issue:_ Missing-category case triggers error on accessing undefined parent category slug.
+  - _Action:_ Handle the missing-category case in the category filtering logic by moving the where["category.slug"] assignment inside the parentCategory guard. When parentCategory is undefined, return or apply the established fallback behavior without accessing parentCategory.slug; preserve inclusion of the parent and subcategory slugs when it exists.
+
+#### Nitpick Comments
+
+- [ ] **[src/app/(app)/(home)/[category]/[subcategory]/page.tsx](src/app/(app)/(home)/[category]/[subcategory]/page.tsx) (Lines 11-15)**
+  - _Issue:_ Props interface's params type is missing category string.
+  - _Action:_ Update the Props interface’s params type to include the category string alongside subcategory, matching the parameters exposed by the [category]/[subcategory] route.
+- [ ] **[src/modules/products/server/procedures.ts](src/modules/products/server/procedures.ts) (Line 30)**
+  - _Issue:_ Leftover console.log statement in procedures module.
+  - _Action:_ Remove the leftover console.log statement that serializes categoriesData, leaving the surrounding product procedure behavior unchanged.
+- [ ] **[src/modules/products/server/procedures.ts](src/modules/products/server/procedures.ts) (Lines 34-36)**
+  - _Issue:_ Conflicting callback parameter name inside subcategories map.
+  - _Action:_ Rename the inner map callback variable in the subcategories mapping within the surrounding product mapping, and update its references in the spread and subsequent fields. Keep the outer map’s variable unchanged and preserve the existing Category cast and mapping behavior.
