@@ -228,3 +228,37 @@ This log tracks code review comments generated during development and the subseq
 - [ ] **[src/modules/products/server/procedures.ts](src/modules/products/server/procedures.ts) (Lines 34-36)**
   - _Issue:_ Conflicting callback parameter name inside subcategories map.
   - _Action:_ Rename the inner map callback variable in the subcategories mapping within the surrounding product mapping, and update its references in the spread and subsequent fields. Keep the outer map’s variable unchanged and preserve the existing Category cast and mapping behavior.
+
+---
+
+### 🔗 PR-12: feat(products): add price filters and grid layout
+
+- **Commit SHA:** `bfc8adc40d460215cbed6978d85c8efa3a29c06f`
+
+#### Inline Comments
+
+- [ ] **[src/modules/products/server/procedures.ts](src/modules/products/server/procedures.ts) (Lines 19-32)**
+  - _Issue:_ Price filters in query-building logic use string inputs instead of numbers.
+  - _Action:_ Update the price filters in the procedure’s query-building logic to convert minPrice and maxPrice string inputs to numbers before assigning them to greater_than_equal or less_than_equal. Preserve the existing combined and single-bound branches while ensuring every value in where.price is numeric.
+- [ ] **[src/modules/products/ui/components/price-filter.tsx](src/modules/products/ui/components/price-filter.tsx) (Lines 33-74)**
+  - _Issue:_ Keystrokes in controlled inputs are overwritten due to currency formatting on every render.
+  - _Action:_ Update PriceFilter so its controlled inputs use the raw minPrice and maxPrice values rather than formatAsCurrency on every render, preventing keystrokes from being overwritten. Change both inputs to native number inputs and add a visual dollar-sign prefix for the minimum price while preserving the existing change handlers and controlled state behavior.
+- [ ] **[src/modules/products/ui/components/product-list.tsx](src/modules/products/ui/components/product-list.tsx) (Lines 11-17)**
+  - _Issue:_ URL-backed price constraints do not reach the server query.
+  - _Action:_ Update ProductList to call useProductFilters and include its minPrice and maxPrice values in the products.getMany queryOptions alongside category, ensuring the URL-backed price constraints reach the server query.
+
+#### Outside Diff Comments
+
+- [ ] **[src/app/(app)/(home)/[category]/page.tsx](<src/app/(app)/(home)/[category]/page.tsx>) (Lines 22-26)**
+  - _Issue:_ Products query prefetch is not awaited before dehydrating the query client.
+  - _Action:_ Await the prefetchQuery call in the page’s data-prefetch flow before dehydrating the query client. Update the surrounding async page implementation as needed so the products query from trpc.products.getMany.queryOptions completes before dehydration, preserving the existing category parameter.
+
+#### Nitpick Comments
+
+- [ ] **[src/modules/products/hooks/use-product-filters.ts](src/modules/products/hooks/use-product-filters.ts) (Lines 4-13)**
+  - _Issue:_ Price URL state updates lack throttleMs delay.
+  - _Action:_ Update the useQueryStates configuration in useProductFilters to add the requested throttleMs delay for price URL state updates, applying it to both minPrice and maxPrice while preserving their existing clearOnDefault behavior.
+- [ ] **[src/modules/products/server/procedures.ts](src/modules/products/server/procedures.ts) (Lines 47-53)**
+  - _Issue:_ Inner map callback parameter in categoriesData transformation uses a conflicting name.
+  - _Action:_ Rename the inner map callback parameter in the categoriesData transformation to a distinct name, while keeping the outer doc parameter and all mapping behavior unchanged.
+
