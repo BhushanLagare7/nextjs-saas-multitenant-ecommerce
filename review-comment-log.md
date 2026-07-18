@@ -157,3 +157,46 @@ This log tracks code review comments generated during development and the subseq
   - _Issue:_ Component renders user data before query resolves.
   - _Action:_ Update the Home component’s useQuery result handling to check isPending before rendering the serialized user data. Render an appropriate loading state while the session query is pending, then preserve the existing JSON output once data resolves.
 
+---
+
+### 🔗 PR-10: refactor(home): relocate UI components and add dynamic category routes
+
+- **Commit SHA:** `7454bbc215703266c97cb75a06d786d2539b7252`
+
+#### Inline Comments
+
+- [ ] **[src/modules/home/ui/components/navbar-sidebar.tsx](src/modules/home/ui/components/navbar-sidebar.tsx) (Lines 44-59)**
+  - _Issue:_ Needs authenticated mobile menu state.
+  - _Action:_ Update NavbarSidebarProps and the NavbarSidebar component to accept the user session state, then render the bottom mobile-menu link conditionally: show a Dashboard link for authenticated users and retain the Log in and Start selling links for unauthenticated users. Preserve the existing styling and onOpenChange(false) behavior.
+- [ ] **[src/modules/home/ui/components/navbar.tsx](src/modules/home/ui/components/navbar.tsx) (Lines 66-113)**
+  - _Issue:_ Unauthenticated controls flashing before session resolves.
+  - _Action:_ Update the navbar authentication rendering around session.data to show a placeholder while session.isLoading is true, preventing unauthenticated controls from flashing before the session resolves. Pass the relevant session state, including loading/authenticated status, into NavbarSidebar so its mobile menu renders the correct links instead of relying on hardcoded options.
+- [ ] **[src/modules/home/ui/components/search-filters/category-dropdown.tsx](src/modules/home/ui/components/search-filters/category-dropdown.tsx) (Lines 55-67)**
+  - _Issue:_ Anchor inside button element.
+  - _Action:_ Update the Button rendering in the category dropdown to use its asChild prop, allowing the nested Link to render as the button element instead of placing an anchor inside a button. Preserve the existing className, variant, href, and category label behavior.
+- [ ] **[src/modules/home/ui/components/search-filters/index.tsx](src/modules/home/ui/components/search-filters/index.tsx) (Lines 19-30)**
+  - _Issue:_ Potential null pointer on category params.
+  - _Action:_ Update the parameter reads in the component using useParams so category and subcategory are accessed through optional chaining, preserving their existing string-or-undefined casts and fallback behavior when params is null.
+- [ ] **[src/modules/home/ui/components/search-filters/subcategory-menu.tsx](src/modules/home/ui/components/search-filters/subcategory-menu.tsx) (Lines 23-30)**
+  - _Issue:_ Unsupported z-100 Tailwind class.
+  - _Action:_ Update the className in the subcategory menu component to replace the unsupported z-100 Tailwind class with the arbitrary-value class z-[100], preserving the existing fixed positioning and layout styles.
+- [ ] **[src/modules/home/ui/components/search-filters/use-dropdown-position.ts](src/modules/home/ui/components/search-filters/use-dropdown-position.ts) (Lines 12-25)**
+  - _Issue:_ Scrolling offset issues in viewport coordinates.
+  - _Action:_ Update the dropdown position calculation to use viewport-relative rect values directly: remove window.scrollX and window.scrollY from left and top calculations, including the right-alignment branch. Preserve the existing viewport boundary logic, and compute DOM layout values outside the React render body, such as in an effect or event handler with state, if the surrounding hook supports it.
+
+#### Outside Diff Comments
+
+- [ ] **[src/app/(app)/(home)/layout.tsx](<src/app/(app)/(home)/layout.tsx>) (Lines 17-20)**
+  - _Issue:_ Fire-and-forget prefetch does not block dehydrate.
+  - _Action:_ Await the categories prefetch in the Layout function by replacing the fire-and-forget call to queryClient.prefetchQuery with an awaited call, ensuring it completes before the query client is dehydrated.
+
+#### Nitpick Comments
+
+- [ ] **[src/modules/home/ui/components/search-filters/category-dropdown.tsx](src/modules/home/ui/components/search-filters/category-dropdown.tsx) (Lines 28-33)**
+  - _Issue:_ Console.log debug statement left in codebase.
+  - _Action:_ Remove the console.log debug statement from the onMouseEnter handler in the category dropdown, preserving the existing subcategories check and setIsOpen(true) behavior.
+- [ ] **[src/modules/home/ui/components/search-filters/search-input.tsx](src/modules/home/ui/components/search-filters/search-input.tsx) (Lines 36-42)**
+  - _Issue:_ Icon-only button lacking accessible name.
+  - _Action:_ Add an accessible name to the icon-only Button rendering ListFilterIcon by providing a descriptive aria-label or visually hidden text, while preserving its existing styling and onClick behavior.
+
+
