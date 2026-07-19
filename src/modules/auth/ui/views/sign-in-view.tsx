@@ -74,7 +74,7 @@ export const SignInView = () => {
                 <span
                   className={cn("text-2xl font-semibold", poppins.className)}
                 >
-                  funroad
+                  Storegrid
                 </span>
               </Link>
               <Button
@@ -88,7 +88,7 @@ export const SignInView = () => {
                 </Link>
               </Button>
             </div>
-            <h1 className="text-4xl font-medium">Welcome back to Funroad.</h1>
+            <h1 className="text-4xl font-medium">Welcome back to storegrid.</h1>
             <FormField
               name="email"
               render={({ field }) => (

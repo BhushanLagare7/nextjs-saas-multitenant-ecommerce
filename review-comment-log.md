@@ -378,3 +378,18 @@ This log tracks code review comments generated during development and the subseq
 - [ ] **[src/modules/tenants/ui/components/navbar.tsx](src/modules/tenants/ui/components/navbar.tsx) (Lines 44-45)**
   - _Issue:_ TODO comment near checkout button lacks dynamic loading placeholder.
   - _Action:_ Replace the TODO near the checkout button in the navbar component with the project’s standard pulsing skeleton placeholder, matching the button’s expected dimensions so layout remains stable during hydration and data fetching.
+
+---
+
+### 🔗 PR-18: feat(checkout): add multi-tenant cart system
+
+- **Commit SHA:** `fe2675cd44d231e976e3afd5b587d74c956aeca2`
+
+#### Inline Comments
+
+- [ ] **[src/modules/checkout/hooks/use-cart.ts](src/modules/checkout/hooks/use-cart.ts) (Lines 4-12)**
+  - _Issue:_ Cart hook subscribes to the entire store instead of using granular selectors.
+  - _Action:_ Update the useCartStore usage in the cart hook to use granular selectors for the tenant-specific productIds and each cart action instead of subscribing to the entire store. Keep the empty-array fallback outside the productIds selector and reuse a stable fallback reference, so missing tenant carts do not produce a new array during store updates.
+- [ ] **[src/modules/checkout/store/use-cart-store.ts](src/modules/checkout/store/use-cart-store.ts) (Lines 21-32)**
+  - _Issue:_ addProduct does not check if productId already exists in the tenant's current productIds before appending.
+  - _Action:_ Update addProduct in the cart store to check whether productId already exists in the tenant’s current productIds before appending it. Preserve the existing cart state and return the unchanged product list when the product is already present, ensuring totalItems and removeProduct behavior remain consistent.
