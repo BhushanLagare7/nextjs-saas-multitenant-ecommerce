@@ -351,3 +351,30 @@ This log tracks code review comments generated during development and the subseq
 - [ ] **[src/modules/home/ui/components/search-filters/subcategory-menu.tsx](src/modules/home/ui/components/search-filters/subcategory-menu.tsx) (Lines 23-29)**
   - _Issue:_ Subcategory menu uses inline styles for positioning instead of Tailwind utilities.
   - _Action:_ Update the positioning container in the subcategory menu to remove its inline top and left styles, replacing them with the Tailwind utilities top-full and left-0 in its className while preserving the existing absolute positioning and z-index classes.
+
+---
+
+### 🔗 PR-16: feat(tenants): add multi-tenant pages and rebrand
+
+- **Commit SHA:** `ce185a0a7d2b59ae255fab460fd1f29583ddab29`
+
+#### Inline Comments
+
+- [ ] **[src/app/(app)/(tenants)/tenants/[slug]/(home)/page.tsx](<src/app/(app)/(tenants)/tenants/[slug]/(home)/page.tsx>) (Lines 19-32)**
+  - _Issue:_ Fire-and-forget prefetchInfiniteQuery call does not block dehydrate in the tenant page.
+  - _Action:_ Await the queryClient.prefetchInfiniteQuery call in the tenant page before the subsequent dehydrate(queryClient) execution, replacing the fire-and-forget invocation while preserving its existing products.getMany options and pagination behavior.
+- [ ] **[src/modules/products/ui/components/product-list.tsx](src/modules/products/ui/components/product-list.tsx) (Lines 59-73)**
+  - _Issue:_ Product list renders entries with missing or invalid tenant relationships.
+  - _Action:_ Filter the products in the data pipeline before the ProductCard map so only entries with a populated tenant object and a valid tenant.slug remain. Update the rendering flow around the pages flatMap/map chain, preserving the existing card fields while ensuring tenantSlug is always a string and invalid or missing tenant relationships are excluded.
+
+#### Outside Diff Comments
+
+- [ ] **[src/modules/products/ui/components/product-card.tsx](src/modules/products/ui/components/product-card.tsx) (Lines 1-88)**
+  - _Issue:_ ProductCard relies on an outer Link wrapper and programmatic navigation handlers.
+  - _Action:_ Update ProductCard to remove the outer Link, use a relative div as the card container, and delete useRouter plus handleUserClick. Make the product title a Link to the product route with before:absolute before:inset-0 so the card remains fully clickable, and replace the tenant click handler with a semantic Link to generateTenantURL(tenantSlug) using relative z-10 for proper layering and keyboard focus.
+
+#### Nitpick Comments
+
+- [ ] **[src/modules/tenants/ui/components/navbar.tsx](src/modules/tenants/ui/components/navbar.tsx) (Lines 44-45)**
+  - _Issue:_ TODO comment near checkout button lacks dynamic loading placeholder.
+  - _Action:_ Replace the TODO near the checkout button in the navbar component with the project’s standard pulsing skeleton placeholder, matching the button’s expected dimensions so layout remains stable during hydration and data fetching.
