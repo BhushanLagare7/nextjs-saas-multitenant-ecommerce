@@ -140,26 +140,116 @@ const categories = [
 const seed = async () => {
   const payload = await getPayload({ config });
 
-  for (const category of categories) {
-    const parentCategory = await payload.create({
-      collection: "categories",
+  // Check if admin tenant already exists
+  const existingTenants = await payload.find({
+    collection: "tenants",
+    where: {
+      slug: {
+        equals: "admin",
+      },
+    },
+  });
+
+  let adminTenant = existingTenants.docs[0];
+  if (adminTenant) {
+    console.log("Admin tenant already exists, reusing it.");
+  } else {
+    // Create admin tenant
+    adminTenant = await payload.create({
+      collection: "tenants",
       data: {
-        name: category.name,
-        slug: category.slug,
-        color: category.color,
-        parent: null,
+        name: "admin",
+        slug: "admin",
+        stripeAccountId: "admin",
+      },
+    });
+    console.log("Created admin tenant.");
+  }
+
+  // Check if admin user already exists
+  const existingUsers = await payload.find({
+    collection: "users",
+    where: {
+      email: {
+        equals: "admin@demo.com",
+      },
+    },
+  });
+
+  if (existingUsers.docs.length > 0) {
+    console.log("Admin user already exists, skipping creation.");
+  } else {
+    // Create admin user
+    await payload.create({
+      collection: "users",
+      data: {
+        email: "admin@demo.com",
+        password: "demo",
+        roles: ["super-admin"],
+        username: "admin",
+        tenants: [
+          {
+            tenant: adminTenant.id,
+          },
+        ],
+      },
+    });
+    console.log("Created admin user.");
+  }
+
+  for (const category of categories) {
+    const existingParent = await payload.find({
+      collection: "categories",
+      where: {
+        slug: {
+          equals: category.slug,
+        },
       },
     });
 
-    for (const subCategory of category.subcategories || []) {
-      await payload.create({
+    let parentCategory = existingParent.docs[0];
+    if (parentCategory) {
+      console.log(
+        `Parent category '${category.name}' already exists, reusing it.`,
+      );
+    } else {
+      parentCategory = await payload.create({
         collection: "categories",
         data: {
-          name: subCategory.name,
-          slug: subCategory.slug,
-          parent: parentCategory.id,
+          name: category.name,
+          slug: category.slug,
+          color: category.color,
+          parent: null,
         },
       });
+      console.log(`Created parent category '${category.name}'.`);
+    }
+
+    for (const subCategory of category.subcategories || []) {
+      const existingSub = await payload.find({
+        collection: "categories",
+        where: {
+          slug: {
+            equals: subCategory.slug,
+          },
+        },
+      });
+
+      if (existingSub.docs.length > 0) {
+        console.log(
+          `Subcategory '${subCategory.name}' already exists, skipping.`,
+        );
+      } else {
+        await payload.create({
+          collection: "categories",
+          data: {
+            name: subCategory.name,
+            slug: subCategory.slug,
+            parent: parentCategory.id,
+          },
+        });
+        console.log(`Created subcategory '${subCategory.name}'.`);
+      }
     }
   }
 };
@@ -169,6 +259,6 @@ try {
   console.log("Seeding completed successfully");
   process.exit(0);
 } catch (error) {
-  console.error("Error during seeding:", error);
+  console.dir(error, { depth: null });
   process.exit(1); // Exit with error code
 }
