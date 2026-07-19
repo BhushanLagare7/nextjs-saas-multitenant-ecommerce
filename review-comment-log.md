@@ -300,3 +300,21 @@ This log tracks code review comments generated during development and the subseq
 - [ ] **[src/modules/tags/server/procedures.ts](src/modules/tags/server/procedures.ts) (Lines 15-19)**
   - _Issue:_ Tags database query results are not explicitly sorted alphabetically.
   - _Action:_ Update the database query in the tags endpoint to explicitly sort results alphabetically by the `name` field, while preserving the existing pagination inputs and response flow.
+
+---
+
+### 🔗 PR-14: feat(products): add cards and infinite scroll
+
+- **Commit SHA:** `18d96bdd38639654700ec8d58b416c19ee37581b`
+
+#### Inline Comments
+
+- [ ] **[src/modules/products/ui/components/product-card.tsx](src/modules/products/ui/components/product-card.tsx) (Lines 40-52)**
+  - _Issue:_ Click handler on author shop div in product card does not prevent parent Link navigation.
+  - _Action:_ Update the author shop click handler in the product card’s author div to accept the click event and call preventDefault(), preventing the surrounding Next.js Link from navigating to the product page while preserving the existing placeholder behavior.
+
+#### Outside Diff Comments
+
+- [ ] **[src/app/(app)/(home)/[category]/page.tsx](<src/app/(app)/(home)/[category]/page.tsx>) & [src/app/(app)/(home)/[category]/[subcategory]/page.tsx](<src/app/(app)/(home)/[category]/[subcategory]/page.tsx>) (Lines 20-25)**
+  - _Issue:_ Server-side prefetch logic does not match client-side useSuspenseInfiniteQuery configuration.
+  - _Action:_ Update the prefetch logic in src/app/(app)/(home)/[category]/page.tsx at lines 20-25 and src/app/(app)/(home)/[category]/[subcategory]/page.tsx at lines 20-25 to use prefetchInfiniteQuery with infiniteQueryOptions, passing limit: DEFAULT_LIMIT to match the client’s useSuspenseInfiniteQuery configuration; add the DEFAULT_LIMIT import in both files.
