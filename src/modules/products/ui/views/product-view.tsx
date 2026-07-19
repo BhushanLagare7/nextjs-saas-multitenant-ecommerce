@@ -3,6 +3,7 @@
 // TODO: Add real ratings
 
 import { Fragment } from "react";
+import dynamic from "next/dynamic";
 import Image from "next/image";
 import Link from "next/link";
 
@@ -15,18 +16,32 @@ import { Progress } from "@/components/ui/progress";
 import { formatCurrency, generateTenantURL } from "@/lib/utils";
 import { useTRPC } from "@/trpc/client";
 
+const CartButton = dynamic(
+  () => import("../components/cart-button").then((mod) => mod.CartButton),
+  {
+    ssr: false,
+    loading: () => (
+      <Button className="flex-1 bg-pink-400" disabled>
+        Add to cart
+      </Button>
+    ),
+  },
+);
+
 interface ProductViewProps {
   productId: string;
   tenantSlug: string;
-};
+}
 
 export const ProductView = ({ productId, tenantSlug }: ProductViewProps) => {
   const trpc = useTRPC();
-  const { data } = useSuspenseQuery(trpc.products.getOne.queryOptions({ id: productId }));
+  const { data } = useSuspenseQuery(
+    trpc.products.getOne.queryOptions({ id: productId }),
+  );
 
   return (
-    <div className="px-4 lg:px-12 py-10">
-      <div className="border rounded-sm bg-white overflow-hidden">
+    <div className="px-4 py-10 lg:px-12">
+      <div className="overflow-hidden rounded-sm border bg-white">
         <div className="relative aspect-[3.9] border-b">
           <Image
             alt={data.name}
@@ -40,49 +55,46 @@ export const ProductView = ({ productId, tenantSlug }: ProductViewProps) => {
             <div className="p-6">
               <h1 className="text-4xl font-medium">{data.name}</h1>
             </div>
-            <div className="border-y flex">
-              <div className="px-6 py-4 flex items-center justify-center border-r">
-                <div className="px-2 py-1 border bg-pink-400 w-fit">
-                  <p className="text-base font-medium">{formatCurrency(data.price)}</p>
+            <div className="flex border-y">
+              <div className="flex items-center justify-center border-r px-6 py-4">
+                <div className="w-fit border bg-pink-400 px-2 py-1">
+                  <p className="text-base font-medium">
+                    {formatCurrency(data.price)}
+                  </p>
                 </div>
               </div>
 
-              <div className="px-6 py-4 flex items-center justify-center lg:border-r">
-                <Link className="flex items-center gap-2" href={generateTenantURL(tenantSlug)}>
+              <div className="flex items-center justify-center px-6 py-4 lg:border-r">
+                <Link
+                  className="flex items-center gap-2"
+                  href={generateTenantURL(tenantSlug)}
+                >
                   {data.tenant.image?.url && (
                     <Image
                       alt={data.tenant.name}
-                      className="rounded-full border shrink-0 size-[20px]"
+                      className="size-[20px] shrink-0 rounded-full border"
                       height={20}
                       src={data.tenant.image.url}
                       width={20}
                     />
                   )}
-                  <p className="text-base underline font-medium">
+                  <p className="text-base font-medium underline">
                     {data.tenant.name}
                   </p>
                 </Link>
               </div>
 
-              <div className="hidden lg:flex px-6 py-4 items-center justify-center">
+              <div className="hidden items-center justify-center px-6 py-4 lg:flex">
                 <div className="flex items-center gap-1">
-                  <StarRating
-                    iconClassName="size-4"
-                    rating={4}
-                  />
+                  <StarRating iconClassName="size-4" rating={4} />
                 </div>
               </div>
             </div>
 
-            <div className="block lg:hidden px-6 py-4 items-center justify-center border-b">
+            <div className="block items-center justify-center border-b px-6 py-4 lg:hidden">
               <div className="flex items-center gap-1">
-                <StarRating
-                  iconClassName="size-4"
-                  rating={4}
-                />
-                <p className="text-base font-medium">
-                  {5} ratings
-                </p>
+                <StarRating iconClassName="size-4" rating={4} />
+                <p className="text-base font-medium">{5} ratings</p>
               </div>
             </div>
 
@@ -90,7 +102,7 @@ export const ProductView = ({ productId, tenantSlug }: ProductViewProps) => {
               {data.description ? (
                 <p>{data.description}</p>
               ) : (
-                <p className="font-medium text-muted-foreground italic">
+                <p className="text-muted-foreground font-medium italic">
                   No description provided
                 </p>
               )}
@@ -98,15 +110,10 @@ export const ProductView = ({ productId, tenantSlug }: ProductViewProps) => {
           </div>
 
           <div className="col-span-2">
-            <div className="border-t lg:border-t-0 lg:border-l h-full">
-              <div className="flex flex-col gap-4 p-6 border-b">
+            <div className="h-full border-t lg:border-t-0 lg:border-l">
+              <div className="flex flex-col gap-4 border-b p-6">
                 <div className="flex flex-row items-center gap-2">
-                  <Button
-                    className="flex-1 bg-pink-400"
-                    variant="elevated"
-                  >
-                    Add to cart
-                  </Button>
+                  <CartButton productId={productId} tenantSlug={tenantSlug} />
                   <Button
                     className="size-12"
                     disabled={false}
@@ -120,8 +127,7 @@ export const ProductView = ({ productId, tenantSlug }: ProductViewProps) => {
                 <p className="text-center font-medium">
                   {data.refundPolicy === "no-refunds"
                     ? "No refunds"
-                    : `${data.refundPolicy} money back guarantee`
-                  }
+                    : `${data.refundPolicy} money back guarantee`}
                 </p>
               </div>
 
@@ -134,19 +140,14 @@ export const ProductView = ({ productId, tenantSlug }: ProductViewProps) => {
                     <p className="text-base">{5} ratings</p>
                   </div>
                 </div>
-                <div
-                  className="grid grid-cols-[auto_1fr_auto] gap-3 mt-4"
-                >
+                <div className="mt-4 grid grid-cols-[auto_1fr_auto] gap-3">
                   {[5, 4, 3, 2, 1].map((stars) => (
                     <Fragment key={stars}>
-                      <div className="font-medium">{stars} {stars === 1 ? "star" : "stars"}</div>
-                      <Progress
-                        className="h-[1lh]"
-                        value={25}
-                      />
                       <div className="font-medium">
-                        {25}%
+                        {stars} {stars === 1 ? "star" : "stars"}
                       </div>
+                      <Progress className="h-[1lh]" value={25} />
+                      <div className="font-medium">{25}%</div>
                     </Fragment>
                   ))}
                 </div>
