@@ -318,3 +318,36 @@ This log tracks code review comments generated during development and the subseq
 - [ ] **[src/app/(app)/(home)/[category]/page.tsx](<src/app/(app)/(home)/[category]/page.tsx>) & [src/app/(app)/(home)/[category]/[subcategory]/page.tsx](<src/app/(app)/(home)/[category]/[subcategory]/page.tsx>) (Lines 20-25)**
   - _Issue:_ Server-side prefetch logic does not match client-side useSuspenseInfiniteQuery configuration.
   - _Action:_ Update the prefetch logic in src/app/(app)/(home)/[category]/page.tsx at lines 20-25 and src/app/(app)/(home)/[category]/[subcategory]/page.tsx at lines 20-25 to use prefetchInfiniteQuery with infiniteQueryOptions, passing limit: DEFAULT_LIMIT to match the client’s useSuspenseInfiniteQuery configuration; add the DEFAULT_LIMIT import in both files.
+
+---
+
+### 🔗 PR-15: feat: add multi-tenant support and fix DB seeding
+
+- **Commit SHA:** `36d3988e6255c1d8cb12d0366d0a314f5863db65`
+
+#### Inline Comments
+
+- [ ] **[src/app/(app)/(home)/page.tsx](<src/app/(app)/(home)/page.tsx>) (Lines 17-29) & [src/app/(app)/(home)/[category]/page.tsx](<src/app/(app)/(home)/[category]/page.tsx>) (Lines 21-33) & [src/app/(app)/(home)/[category]/[subcategory]/page.tsx](<src/app/(app)/(home)/[category]/[subcategory]/page.tsx>) (Lines 21-33)**
+  - _Issue:_ Fire-and-forget prefetchInfiniteQuery calls do not block dehydrate.
+  - _Action:_ Await the prefetchInfiniteQuery call in src/app/(app)/(home)/page.tsx lines 17-29, src/app/(app)/(home)/[category]/page.tsx lines 21-33, and src/app/(app)/(home)/[category]/[subcategory]/page.tsx lines 21-33 by replacing void with await, ensuring dehydrate(queryClient) runs only after each products.getMany prefetch completes.
+- [ ] **[src/collections/Users.ts](src/collections/Users.ts) (Lines 4-18, 33-42)**
+  - _Issue:_ Users roles and field access allow unrestricted privilege changes or operations.
+  - _Action:_ In src/collections/Users.ts lines 33-42, add field-level create and update access rules permitting only existing super-admins; in src/collections/Users.ts lines 4-18, replace the unrestricted create and update rules in arrayFieldAccess and tenantFieldAccess with equivalent authorized-role checks, preserving read behavior.
+- [ ] **[src/modules/auth/server/procedures.ts](src/modules/auth/server/procedures.ts) (Lines 40-47)**
+  - _Issue:_ Tenant creation slug assigned from username is not normalized into a URL-safe subdomain.
+  - _Action:_ Update the tenant creation data in the authentication procedure so the slug assigned from input.username is normalized into a URL-safe subdomain value, using the project’s existing slugify utility if available or equivalent normalization. Keep the tenant name unchanged and ensure spaces and special characters cannot produce an invalid slug.
+
+#### Outside Diff Comments
+
+- [ ] **[src/modules/home/ui/components/search-filters/category-dropdown.tsx](src/modules/home/ui/components/search-filters/category-dropdown.tsx) (Lines 26-31)**
+  - _Issue:_ Dropdown opens on hover even for categories with empty subcategories, and contains a debug console.log.
+  - _Action:_ Update onMouseEnter in the category dropdown to open the menu only when category.subcategories contains at least one item, and remove the leftover console.log statement. Preserve the existing behavior for categories with non-empty subcategories.
+
+#### Nitpick Comments
+
+- [ ] **[src/modules/home/ui/components/search-filters/category-dropdown.tsx](src/modules/home/ui/components/search-filters/category-dropdown.tsx) (Line 24)**
+  - _Issue:_ Unused dropdownRef declaration, ref prop, and useRef import.
+  - _Action:_ Remove the unused dropdownRef declaration from the category dropdown component and remove the corresponding ref prop from its wrapper div. Also clean up the now-unused useRef import if present, while preserving the component’s remaining behavior.
+- [ ] **[src/modules/home/ui/components/search-filters/subcategory-menu.tsx](src/modules/home/ui/components/search-filters/subcategory-menu.tsx) (Lines 23-29)**
+  - _Issue:_ Subcategory menu uses inline styles for positioning instead of Tailwind utilities.
+  - _Action:_ Update the positioning container in the subcategory menu to remove its inline top and left styles, replacing them with the Tailwind utilities top-full and left-0 in its className while preserving the existing absolute positioning and z-index classes.

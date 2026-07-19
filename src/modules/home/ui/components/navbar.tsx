@@ -59,7 +59,7 @@ export const Navbar = () => {
     <nav className="flex h-20 justify-between border-b bg-white font-medium">
       <Link className="flex items-center pl-6" href="/">
         <span className={cn("text-5xl font-semibold", poppins.className)}>
-          funroad
+          Storegrid
         </span>
       </Link>
 
