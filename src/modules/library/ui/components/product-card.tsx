@@ -14,7 +14,7 @@ interface ProductCardProps {
   tenantImageUrl?: string | null;
   reviewRating: number;
   reviewCount: number;
-};
+}
 
 export const ProductCard = ({
   id,
@@ -26,8 +26,8 @@ export const ProductCard = ({
   reviewCount,
 }: ProductCardProps) => {
   return (
-    <Link href={`/library/${id}`}>
-      <div className="hover:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] transition-shadow border rounded-md bg-white overflow-hidden h-full flex flex-col">
+    <Link href={`/library/${id}`} prefetch>
+      <div className="flex h-full flex-col overflow-hidden rounded-md border bg-white transition-shadow hover:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
         <div className="relative aspect-square">
           <Image
             alt={name}
@@ -36,19 +36,19 @@ export const ProductCard = ({
             src={imageUrl || "/placeholder.png"}
           />
         </div>
-        <div className="p-4 border-y flex flex-col gap-3 flex-1">
-          <h2 className="text-lg font-medium line-clamp-4">{name}</h2>
+        <div className="flex flex-1 flex-col gap-3 border-y p-4">
+          <h2 className="line-clamp-4 text-lg font-medium">{name}</h2>
           <div className="flex items-center gap-2">
             {tenantImageUrl && (
               <Image
                 alt={tenantSlug}
-                className="rounded-full border shrink-0 size-[16px]"
+                className="size-[16px] shrink-0 rounded-full border"
                 height={16}
                 src={tenantImageUrl}
                 width={16}
               />
             )}
-            <p className="text-sm underline font-medium">{tenantSlug}</p>
+            <p className="text-sm font-medium underline">{tenantSlug}</p>
           </div>
           {reviewCount > 0 && (
             <div className="flex items-center gap-1">
@@ -61,11 +61,11 @@ export const ProductCard = ({
         </div>
       </div>
     </Link>
-  )
+  );
 };
 
 export const ProductCardSkeleton = () => {
   return (
-    <div className="w-full aspect-3/4 bg-neutral-200 rounded-lg animate-pulse" />
+    <div className="aspect-3/4 w-full animate-pulse rounded-lg bg-neutral-200" />
   );
 };
