@@ -393,3 +393,31 @@ This log tracks code review comments generated during development and the subseq
 - [ ] **[src/modules/checkout/store/use-cart-store.ts](src/modules/checkout/store/use-cart-store.ts) (Lines 21-32)**
   - _Issue:_ addProduct does not check if productId already exists in the tenant's current productIds before appending.
   - _Action:_ Update addProduct in the cart store to check whether productId already exists in the tenant’s current productIds before appending it. Preserve the existing cart state and return the unchanged product list when the product is already present, ensuring totalItems and removeProduct behavior remain consistent.
+
+---
+
+### 🔗 PR-19: feat(checkout): implement tenant checkout UI and endpoint
+
+- **Commit SHA:** `e4ce1cdd9dc1965cd9b2202d87f50da34374d52e`
+
+#### Inline Comments
+
+- [ ] **[src/modules/auth/ui/views/sign-in-view.tsx](src/modules/auth/ui/views/sign-in-view.tsx) (Line 91)**
+  - _Issue:_ Brand capitalization in sign-in view.
+  - _Action:_ Update the heading in the sign-in view to use the canonical “Storegrid” brand capitalization, matching the existing title casing elsewhere while preserving the rest of the heading text.
+- [ ] **[src/modules/checkout/server/procedures.ts](src/modules/checkout/server/procedures.ts) (Lines 25-32)**
+  - _Issue:_ Checkout procedure throwing errors on missing product IDs.
+  - _Action:_ Update the checkout procedure around the totalDocs validation and totalPrice calculation to stop throwing when some product IDs are missing. Return the found products together with the missing IDs, allowing the checkout view to remove only invalid cart entries instead of calling clearAllCarts(); preserve normal pricing for all found products.
+- [ ] **[src/modules/checkout/ui/views/checkout-view.tsx](src/modules/checkout/ui/views/checkout-view.tsx) (Lines 28-33)**
+  - _Issue:_ NOT_FOUND error handling clearing carts for every tenant.
+  - _Action:_ Replace clearAllCarts in the useEffect with useCart’s tenant-scoped clearCart, passing the active tenantSlug, while preserving the existing warning toast and effect dependencies.
+
+#### Nitpick Comments
+
+- [ ] **[src/modules/checkout/ui/views/checkout-view.tsx](src/modules/checkout/ui/views/checkout-view.tsx) (Lines 24-54)**
+  - _Issue:_ Products query running with empty productIds list.
+  - _Action:_ Update the useQuery call in the checkout view to disable the products query when productIds is empty, and change the empty-state condition to check productIds.length directly. Preserve the existing loading and no-products rendering for non-empty carts.
+- [ ] **[src/modules/checkout/ui/views/checkout-view.tsx](src/modules/checkout/ui/views/checkout-view.tsx) (Line 83)**
+  - _Issue:_ Missing checkout submission behavior in onCheckout handler.
+  - _Action:_ Implement the missing checkout submission behavior in the onCheckout handler passed by checkout-view.tsx instead of leaving it as an empty function. Connect it to the existing checkout or payment-session flow, preserving the expected redirect or submission behavior and using the nearest established checkout symbols rather than adding unrelated functionality.
+
