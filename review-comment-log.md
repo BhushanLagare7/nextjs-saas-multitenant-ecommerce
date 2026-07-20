@@ -410,7 +410,7 @@ This log tracks code review comments generated during development and the subseq
   - _Action:_ Update the checkout procedure around the totalDocs validation and totalPrice calculation to stop throwing when some product IDs are missing. Return the found products together with the missing IDs, allowing the checkout view to remove only invalid cart entries instead of calling clearAllCarts(); preserve normal pricing for all found products.
 - [ ] **[src/modules/checkout/ui/views/checkout-view.tsx](src/modules/checkout/ui/views/checkout-view.tsx) (Lines 28-33)**
   - _Issue:_ NOT_FOUND error handling clearing carts for every tenant.
-  - _Action:_ Replace clearAllCarts in the useEffect with useCart’s tenant-scoped clearCart, passing the active tenantSlug, while preserving the existing warning toast and effect dependencies.
+  - _Action:_ Update review-comment-log.md lines 411-413 to instruct using the tenant-scoped clearCart returned by useCart(tenantSlug), without passing tenantSlug again, while preserving the warning toast and dependencies.
 
 #### Nitpick Comments
 
@@ -419,5 +419,48 @@ This log tracks code review comments generated during development and the subseq
   - _Action:_ Update the useQuery call in the checkout view to disable the products query when productIds is empty, and change the empty-state condition to check productIds.length directly. Preserve the existing loading and no-products rendering for non-empty carts.
 - [ ] **[src/modules/checkout/ui/views/checkout-view.tsx](src/modules/checkout/ui/views/checkout-view.tsx) (Line 83)**
   - _Issue:_ Missing checkout submission behavior in onCheckout handler.
-  - _Action:_ Implement the missing checkout submission behavior in the onCheckout handler passed by checkout-view.tsx instead of leaving it as an empty function. Connect it to the existing checkout or payment-session flow, preserving the expected redirect or submission behavior and using the nearest established checkout symbols rather than adding unrelated functionality.
+  - _Action:_ Update lines 420-422 to reference the existing onPurchase prop passed to CheckoutSidebar instead of onCheckout.
+
+---
+
+### 🔗 PR-20: feat(checkout): add Stripe integration
+
+- **Commit SHA:** `c6778bdac1ddcab575cc474fcaf24dded09b39d5`
+
+#### Inline Comments
+
+- [ ] **[review-comment-log.md](review-comment-log.md) (Lines 411-413)**
+  - _Issue:_ Stale clearCart instruction in log.
+  - _Action:_ Update review-comment-log.md lines 411-413 to instruct using the tenant-scoped clearCart returned by useCart(tenantSlug), without passing tenantSlug again, while preserving the warning toast and dependencies.
+- [ ] **[review-comment-log.md](review-comment-log.md) (Lines 420-422)**
+  - _Issue:_ Stale onCheckout reference in log.
+  - _Action:_ Update lines 420-422 to reference the existing onPurchase prop passed to CheckoutSidebar instead of onCheckout.
+- [ ] **[src/app/(app)/api/stripe/webhooks/route.ts](<src/app/(app)/api/stripe/webhooks/route.ts>) (Lines 78-88)**
+  - _Issue:_ Order creation in stripe webhook completes duplicate orders on retry.
+  - _Action:_ Update the order creation loop in the checkout.session.completed webhook to check for an existing order matching the same stripeCheckoutSessionId and line item product before calling payload.create. Skip creation when a matching order already exists, while preserving creation for new session/product pairs so webhook retries are idempotent.
+- [ ] **[src/collections/Orders.ts](src/collections/Orders.ts) (Lines 28-32)**
+  - _Issue:_ Orders schema needs a stripeLineItemId field and update stripeCheckoutSessionId indexes.
+  - _Action:_ Add a unique, indexed-by-uniqueness stripeLineItemId field to the Orders schema and populate it from the Stripe line item’s item.id when creating orders. Update stripeCheckoutSessionId to use index: true without unique enforcement, preserving support for multiple line items per checkout session.
+- [ ] **[src/collections/Orders.ts](src/collections/Orders.ts) (Lines 8-33)**
+  - _Issue:_ Orders schema lacks transaction amount and required tenant relationship fields.
+  - _Action:_ Add an `amount` number field to the Orders `fields` definition to persist the transaction price, and add a required `tenant` relationship field targeting `tenants` with single-value semantics. Keep the existing `name`, `user`, `product`, and `stripeCheckoutSessionId` fields unchanged.
+- [ ] **[src/collections/Orders.ts](src/collections/Orders.ts) (Lines 3-8)**
+  - _Issue:_ Orders collection missing explicit authorization rules and access controls.
+  - _Action:_ Update the Orders collection configuration to define explicit access controls for all CRUD operations. Restrict read access to authenticated users’ own orders, and deny or appropriately authorize create, update, and delete operations so unauthenticated users cannot access, create, or modify order data. Add the controls directly to the Orders collection rather than relying on Payload defaults.
+- [ ] **[src/modules/checkout/server/procedures.ts](src/modules/checkout/server/procedures.ts) (Lines 72-88)**
+  - _Issue:_ unit_amount calculation can pass non-integer values to Stripe.
+  - _Action:_ Update the unit_amount calculation in the products.docs mapping to round product.price multiplied by 100 to the nearest integer before passing it to Stripe, while preserving the existing currency and metadata fields.
+- [ ] **[src/modules/checkout/server/procedures.ts](src/modules/checkout/server/procedures.ts) (Line 70)**
+  - _Issue:_ Checkout procedure creates charges without validating Stripe configuration.
+  - _Action:_ Update the checkout procedure around the TODO to require tenant.stripeDetailsSubmitted before creating a charge, and configure the Stripe Checkout Session to use tenant.stripeAccountId as the connected-account destination so funds route to the tenant. Preserve the existing checkout flow for valid tenants and reject tenants missing submitted Stripe details or a connected account.
+- [ ] **[src/modules/checkout/ui/views/checkout-view.tsx](src/modules/checkout/ui/views/checkout-view.tsx) (Lines 53-67)**
+  - _Issue:_ Success/error effects depend on unstable callbacks and perform history-preserving redirects.
+  - _Action:_ Update the success and error useEffects in the checkout view to avoid depending on the unstable clearCart function reference, while preserving their existing behavior. Replace router.push with router.replace in the success effect so the success URL state is not retained in browser history and navigation cannot loop on back navigation.
+
+#### Nitpick Comments
+
+- [ ] **[src/app/(app)/api/stripe/webhooks/route.ts](<src/app/(app)/api/stripe/webhooks/route.ts>) (Lines 45-92)**
+  - _Issue:_ Switch case lacks lexical block scoping for localized variable declarations.
+  - _Action:_ Wrap the statements in the "checkout.session.completed" branch of the webhook switch in braces to create a case-local block. Keep the existing validation, user lookup, session expansion, line-item processing, and break behavior unchanged while scoping the declarations user, expandedSession, and lineItems to that case.
+
 
