@@ -463,4 +463,17 @@ This log tracks code review comments generated during development and the subseq
   - _Issue:_ Switch case lacks lexical block scoping for localized variable declarations.
   - _Action:_ Wrap the statements in the "checkout.session.completed" branch of the webhook switch in braces to create a case-local block. Keep the existing validation, user lookup, session expansion, line-item processing, and break behavior unchanged while scoping the declarations user, expandedSession, and lineItems to that case.
 
+---
 
+### 🔗 PR-21: feat(library): add user library and purchase checks
+
+- **Commit SHA:** `fa926ca9e75013ca27807c85c670f4e1564e1127`
+
+#### Inline Comments
+
+- [ ] **[review-comment-log.md](review-comment-log.md) (Lines 438-440)**
+  - _Issue:_ Checkout session completed order creation loop needs line-item ID deduplication.
+  - _Action:_ Update the checkout.session.completed order creation loop to persist and query Stripe’s line-item ID from item.id before calling payload.create, using it with the checkout session identifier for deduplication. Skip creation only when that exact session/line-item order already exists, while preserving creation for distinct line items and new webhook deliveries.
+- [ ] **[src/modules/library/server/procedures.ts](src/modules/library/server/procedures.ts) (Lines 30-48)**
+  - _Issue:_ Library procedure loses pagination metadata from ordersData or queries empty productIds.
+  - _Action:_ Update the procedure’s return object to preserve pagination metadata from ordersData while still mapping product documents from productsData.docs. In the products lookup, skip the database query when productIds is empty and use an empty document list, while retaining the existing document transformations for non-empty IDs.
