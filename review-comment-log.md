@@ -477,3 +477,28 @@ This log tracks code review comments generated during development and the subseq
 - [ ] **[src/modules/library/server/procedures.ts](src/modules/library/server/procedures.ts) (Lines 30-48)**
   - _Issue:_ Library procedure loses pagination metadata from ordersData or queries empty productIds.
   - _Action:_ Update the procedure’s return object to preserve pagination metadata from ordersData while still mapping product documents from productsData.docs. In the products lookup, skip the database query when productIds is empty and use an empty document list, while retaining the existing document transformations for non-empty IDs.
+
+---
+
+### 🔗 PR-22: feat(reviews): add product review system and detailed view
+
+- **Commit SHA:** `ec12523112790b627652ca2d69e1bb26ed81e6b6`
+
+#### Inline Comments
+
+- [ ] **[src/components/star-picker.tsx](src/components/star-picker.tsx) (Lines 36-58)**
+  - _Issue:_ Accessible aria-label missing from star-picker buttons.
+  - _Action:_ Add an accessible aria-label to each button rendered in the star map, using the current star value and indicating its rating meaning; update the button markup near handleChange so screen readers can identify each option and the selected value remains understandable.
+- [ ] **[src/modules/library/server/procedures.ts](src/modules/library/server/procedures.ts) (Lines 16-26)**
+  - _Issue:_ Orders query pagination option overrides limit: 1.
+  - _Action:_ Remove the pagination: false option from the orders query in the procedure’s find call so the existing limit: 1 is enforced while preserving the current product and user filters.
+- [ ] **[src/modules/reviews/server/procedures.ts](src/modules/reviews/server/procedures.ts) (Lines 53-94)**
+  - _Issue:_ Review creation mutation missing order verification guard.
+  - _Action:_ In the review creation mutation, validate that an order exists for ctx.session.user.id and input.productId before querying existing reviews; reject users without a matching purchase with an appropriate TRPCError, then retain the existing duplicate-review check and creation flow.
+
+#### Nitpick Comments
+
+- [ ] **[src/modules/reviews/server/procedures.ts](src/modules/reviews/server/procedures.ts) (Lines 14-35)**
+  - _Issue:_ Redundant product lookup before reviews query.
+  - _Action:_ Remove the redundant product lookup and its NOT_FOUND handling before the reviews query. Update the reviews query in the relevant procedure to match product directly against input.productId, preserving the existing user filter and review lookup behavior.
+

@@ -14,7 +14,9 @@ export const ProductList = () => {
   const { data, hasNextPage, isFetchingNextPage, fetchNextPage } =
     useSuspenseInfiniteQuery(
       trpc.library.getMany.infiniteQueryOptions(
-        { limit: DEFAULT_LIMIT },
+        {
+          limit: DEFAULT_LIMIT,
+        },
         {
           getNextPageParam: (lastPage) => {
             return lastPage.docs.length > 0 ? lastPage.nextPage : undefined;
@@ -43,8 +45,8 @@ export const ProductList = () => {
               id={product.id}
               imageUrl={product.image?.url}
               name={product.name}
-              reviewCount={5}
-              reviewRating={3}
+              reviewCount={product.reviewCount}
+              reviewRating={product.reviewRating}
               tenantImageUrl={product.tenant?.image?.url}
               tenantSlug={product.tenant?.slug}
             />
