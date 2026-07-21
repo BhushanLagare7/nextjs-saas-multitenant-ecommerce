@@ -502,3 +502,25 @@ This log tracks code review comments generated during development and the subseq
   - _Issue:_ Redundant product lookup before reviews query.
   - _Action:_ Remove the redundant product lookup and its NOT_FOUND handling before the reviews query. Update the reviews query in the relevant procedure to match product directly against input.productId, preserving the existing user filter and review lookup behavior.
 
+---
+
+### 🔗 PR-23: feat(products): summarize product reviews and add share link
+
+- **Commit SHA:** `071d575e00c908811a0cc9b358776b8495dce1db`
+
+#### Inline Comments
+
+- [ ] **[src/modules/products/ui/views/product-view.tsx](<src/modules/products/ui/views/product-view.tsx>) (Lines 132-144)**
+  - _Issue:_ Copy URL onClick handler does not await navigator.clipboard.writeText Promise or handle rejection.
+  - _Action:_ Update the copy URL onClick handler in the product view to handle the Promise returned by navigator.clipboard.writeText: show the success toast and complete the copied-state reset only after resolution, and add a catch path that handles rejection without showing success. Preserve the existing clipboard text and user-facing copied state behavior for successful writes.
+- [ ] **[src/modules/products/ui/views/product-view.tsx](<src/modules/products/ui/views/product-view.tsx>) (Lines 160-161)**
+  - _Issue:_ Unformatted review rating rendering.
+  - _Action:_ Format data.reviewRating to one decimal place before rendering it in the rating paragraph, while leaving the existing reviewCount display unchanged.
+
+#### Outside Diff Comments
+
+- [ ] **[src/modules/products/server/procedures.ts](src/modules/products/server/procedures.ts) (Line 1)**
+  - _Issue:_ Product and library procedures issue unaggregated review queries or per-item Promise.all calls.
+  - _Action:_ Refactor the product and library getMany/getOne procedures to stop querying all reviews with pagination disabled or issuing per-item Promise.all review queries. Read reviewCount, reviewRating, and ratingDistribution from the product’s cached fields, and add or reuse reviews collection afterChange/afterDelete hooks to asynchronously maintain those aggregates on the related product.
+
+

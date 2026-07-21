@@ -24,6 +24,9 @@ export const productsRouter = createTRPCRouter({
         collection: "products",
         id: input.id,
         depth: 2, // Load the "product.image", "product.tenant", and "product.tenant.image"
+        select: {
+          content: false,
+        },
       });
 
       let isPurchased = false;
@@ -35,8 +38,16 @@ export const productsRouter = createTRPCRouter({
           limit: 1,
           where: {
             and: [
-              { product: { equals: input.id } },
-              { user: { equals: session.user.id } },
+              {
+                product: {
+                  equals: input.id,
+                },
+              },
+              {
+                user: {
+                  equals: session.user.id,
+                },
+              },
             ],
           },
         });
@@ -197,6 +208,9 @@ export const productsRouter = createTRPCRouter({
         sort,
         page: input.cursor,
         limit: input.limit,
+        select: {
+          content: false,
+        },
       });
 
       const dataWithSummarizedReviews = await Promise.all(
