@@ -544,5 +544,35 @@ This log tracks code review comments generated during development and the subseq
   - _Issue:_ Access policies for Orders and Reviews.
   - _Action:_ Verify the access policies for Orders and Reviews before changing them: in src/collections/Orders.ts lines 7-12, ensure users can place and view only their own orders if direct Payload API access is required; apply the corresponding review submission and reading rules in src/collections/Reviews.ts lines 7-12. Preserve super-admin access and keep all operations restricted if end-users are not intended to use these APIs.
 
+---
 
+### 🔗 PR-25: feat(stripe): implement connect onboarding & custom accounts
 
+- **Commit SHA:** `90a94fb5af6256dc451dcd52e642b7e30f130f49`
+
+#### Inline Comments
+
+- [ ] **[src/app/(app)/api/stripe/webhooks/route.ts](<src/app/(app)/api/stripe/webhooks/route.ts>) (Lines 77-78)**
+  - _Issue:_ Switch case scope and variable leaking.
+  - _Action:_ Wrap the checkout.session.completed switch case body in braces and keep the lineItems declaration inside that scoped block, preventing it from leaking into other cases while preserving the existing case behavior.
+- [ ] **[src/app/(app)/api/stripe/webhooks/route.ts](<src/app/(app)/api/stripe/webhooks/route.ts>) (Lines 96-106)**
+  - _Issue:_ Stale webhook event status overwrite.
+  - _Action:_ Update the tenant status handling in the account.updated webhook around payload.update so stale Stripe events cannot overwrite a newer stripeDetailsSubmitted value. Compare the incoming event against the latest Stripe account state or persist and validate an event timestamp/version, and only apply the update when the event is current.
+- [ ] **[src/app/(app)/api/stripe/webhooks/route.ts](<src/app/(app)/api/stripe/webhooks/route.ts>) (Lines 80-90)**
+  - _Issue:_ Non-idempotent webhook order fulfillment.
+  - _Action:_ Update the order-creation loop in the webhook handler to make fulfillment idempotent: persist a unique Stripe event or checkout-session line-item key with each order, check for an existing order using that key before calling payload.create, and skip duplicates on webhook retries while still allowing unprocessed line items to be inserted.
+- [ ] **[src/components/stripe-verify.tsx](src/components/stripe-verify.tsx) (Lines 5-8)**
+  - _Issue:_ Multiple nested interactive controls.
+  - _Action:_ Update the Stripe verification control in the component rendering the “Verify account” action to use a single interactive element: configure the `@payloadcms/ui` Button with the /stripe-verify destination and link styling, and remove the wrapping Link while preserving the existing label and navigation.
+- [ ] **[src/modules/auth/server/procedures.ts](src/modules/auth/server/procedures.ts) (Lines 41-55)**
+  - _Issue:_ Unvalidated registration inputs and orphan Stripe account on persistence failure.
+  - _Action:_ Update the registration procedure around Stripe account creation, account, and ctx.db.create to validate all inputs before provisioning, supply a stable idempotency key to Stripe, and wrap subsequent tenant/user persistence in compensating error handling. If any persistence step fails after account creation, delete the provisioned Stripe account before propagating the original failure.
+- [ ] **[src/modules/checkout/server/procedures.ts](src/modules/checkout/server/procedures.ts) (Lines 31-35)**
+  - _Issue:_ Missing early validation of tenantId.
+  - _Action:_ Validate tenantId immediately after deriving it in the checkout procedure, before calling ctx.db.findByID; when it is absent, throw the intended NOT_FOUND error. Preserve the existing tenant lookup for users with a valid tenant membership.
+
+#### Outside Diff Comments
+
+- [ ] **[src/seed.ts](src/seed.ts) (Lines 155-173)**
+  - _Issue:_ Reused seeding tenant missing Stripe account ID update.
+  - _Action:_ The admin tenant seeding flow currently creates a new Stripe account before checking for an existing tenant, leaving reused tenants with the legacy Stripe account ID. Move Stripe account creation into the new-tenant branch, and when reusing an existing tenant, update its stripeAccountId to the migrated account value before continuing; preserve the existing create path for tenants that do not yet exist.
