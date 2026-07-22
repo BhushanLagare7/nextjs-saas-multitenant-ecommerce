@@ -553,20 +553,20 @@ This log tracks code review comments generated during development and the subseq
 #### Inline Comments
 
 - [ ] **[src/app/(app)/api/stripe/webhooks/route.ts](<src/app/(app)/api/stripe/webhooks/route.ts>) (Lines 77-78)**
-  - _Issue:_ Switch case scope and variable leaking.
-  - _Action:_ Wrap the checkout.session.completed switch case body in braces and keep the lineItems declaration inside that scoped block, preventing it from leaking into other cases while preserving the existing case behavior.
+  - _Issue:_ Potential variable scope leaking (preventive).
+  - _Action:_ Treat adding braces around the checkout.session.completed case body as an optional preventive refactor rather than a required fix, since lineItems is only used within that case and causes no current functional problem.
 - [ ] **[src/app/(app)/api/stripe/webhooks/route.ts](<src/app/(app)/api/stripe/webhooks/route.ts>) (Lines 96-106)**
   - _Issue:_ Stale webhook event status overwrite.
   - _Action:_ Update the tenant status handling in the account.updated webhook around payload.update so stale Stripe events cannot overwrite a newer stripeDetailsSubmitted value. Compare the incoming event against the latest Stripe account state or persist and validate an event timestamp/version, and only apply the update when the event is current.
 - [ ] **[src/app/(app)/api/stripe/webhooks/route.ts](<src/app/(app)/api/stripe/webhooks/route.ts>) (Lines 80-90)**
   - _Issue:_ Non-idempotent webhook order fulfillment.
-  - _Action:_ Update the order-creation loop in the webhook handler to make fulfillment idempotent: persist a unique Stripe event or checkout-session line-item key with each order, check for an existing order using that key before calling payload.create, and skip duplicates on webhook retries while still allowing unprocessed line items to be inserted.
+  - _Action:_ Update the webhook handler’s order-creation loop to enforce idempotency atomically: persist the Stripe event or checkout-session line-item key on each order under a database-level unique constraint, retain the pre-check, and handle duplicate-key conflicts from payload.create by skipping the duplicate while allowing other unprocessed line items to be created.
 - [ ] **[src/components/stripe-verify.tsx](src/components/stripe-verify.tsx) (Lines 5-8)**
   - _Issue:_ Multiple nested interactive controls.
   - _Action:_ Update the Stripe verification control in the component rendering the “Verify account” action to use a single interactive element: configure the `@payloadcms/ui` Button with the /stripe-verify destination and link styling, and remove the wrapping Link while preserving the existing label and navigation.
 - [ ] **[src/modules/auth/server/procedures.ts](src/modules/auth/server/procedures.ts) (Lines 41-55)**
   - _Issue:_ Unvalidated registration inputs and orphan Stripe account on persistence failure.
-  - _Action:_ Update the registration procedure around Stripe account creation, account, and ctx.db.create to validate all inputs before provisioning, supply a stable idempotency key to Stripe, and wrap subsequent tenant/user persistence in compensating error handling. If any persistence step fails after account creation, delete the provisioned Stripe account before propagating the original failure.
+  - _Action:_ Update the registration procedure around registerSchema, stripe.accounts.create(), and ctx.db.create to preserve validated input handling, pass a stable registration-derived idempotency key to Stripe, and wrap all tenant/user persistence after account creation in error handling. If any persistence operation fails, delete the newly provisioned Stripe account, then rethrow the original failure.
 - [ ] **[src/modules/checkout/server/procedures.ts](src/modules/checkout/server/procedures.ts) (Lines 31-35)**
   - _Issue:_ Missing early validation of tenantId.
   - _Action:_ Validate tenantId immediately after deriving it in the checkout procedure, before calling ctx.db.findByID; when it is absent, throw the intended NOT_FOUND error. Preserve the existing tenant lookup for users with a valid tenant membership.
@@ -574,5 +574,20 @@ This log tracks code review comments generated during development and the subseq
 #### Outside Diff Comments
 
 - [ ] **[src/seed.ts](src/seed.ts) (Lines 155-173)**
-  - _Issue:_ Reused seeding tenant missing Stripe account ID update.
-  - _Action:_ The admin tenant seeding flow currently creates a new Stripe account before checking for an existing tenant, leaving reused tenants with the legacy Stripe account ID. Move Stripe account creation into the new-tenant branch, and when reusing an existing tenant, update its stripeAccountId to the migrated account value before continuing; preserve the existing create path for tenants that do not yet exist.
+  - _Issue:_ Stripe account creation on seeding reruns.
+  - _Action:_ Update the admin tenant seeding flow in src/seed.ts so Stripe account creation occurs only when creating a new tenant, preventing unused accounts on reruns. In the existing-tenant branch, set stripeAccountId to the migrated account value before continuing, while preserving the current creation behavior for tenants that do not yet exist.
+
+---
+
+### 🔗 PR-26: feat(products): add archiving, privacy filtering & rich text support
+
+- **Commit SHA:** `76d0e318f4fc17d8bb697de5f25c5adec8b5b45d`
+
+#### Inline Comments
+
+- [ ] **[src/collections/Products.ts](src/collections/Products.ts) (Line 30)**
+  - _Issue:_ Lexical migration for description and content fields.
+  - _Action:_ Before switching the description/content fields to Lexical in the Products collection, add a migration that converts previously persisted string values into valid Lexical document objects with the expected root structure. Apply the migration to both richText field definitions identified near the shown type and the corresponding field around the other referenced location, while preserving already-migrated document values.
+- [ ] **[src/modules/products/server/procedures.ts](src/modules/products/server/procedures.ts) (Lines 33-38)**
+  - _Issue:_ Scope and privacy validation in getOne.
+  - _Action:_ Update the getOne procedure to accept tenantSlug and validate it against the fetched product’s tenant before returning it. Preserve archived-product rejection, and reject private products unless the supplied tenant scope is permitted and matches the product tenant, aligning visibility with getMany.
