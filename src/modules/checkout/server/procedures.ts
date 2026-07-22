@@ -80,6 +80,11 @@ export const checkoutRouter = createTRPCRouter({
                 equals: input.tenantSlug,
               },
             },
+            {
+              isArchived: {
+                not_equals: true,
+              },
+            },
           ],
         },
       });
@@ -161,7 +166,9 @@ export const checkoutRouter = createTRPCRouter({
             application_fee_amount: platformFeeAmount,
           },
         },
-        { stripeAccount: tenant.stripeAccountId },
+        {
+          stripeAccount: tenant.stripeAccountId,
+        },
       );
 
       if (!checkout.url) {
@@ -184,9 +191,18 @@ export const checkoutRouter = createTRPCRouter({
         collection: "products",
         depth: 2, // Populate "category", "image", "tenant" & "tenant.image"
         where: {
-          id: {
-            in: input.ids,
-          },
+          and: [
+            {
+              id: {
+                in: input.ids,
+              },
+            },
+            {
+              isArchived: {
+                not_equals: true,
+              },
+            },
+          ],
         },
       });
 
