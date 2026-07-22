@@ -1,6 +1,8 @@
 import config from "@payload-config";
 import { getPayload } from "payload";
 
+import { stripe } from "./lib/stripe";
+
 const categories = [
   {
     name: "All",
@@ -150,6 +152,12 @@ const seed = async () => {
     },
   });
 
+  const adminAccount = await stripe.accounts.create({});
+
+  if (!adminAccount.id) {
+    throw new Error("Failed to create Stripe account");
+  }
+
   let adminTenant = existingTenants.docs[0];
   if (adminTenant) {
     console.log("Admin tenant already exists, reusing it.");
@@ -160,7 +168,7 @@ const seed = async () => {
       data: {
         name: "admin",
         slug: "admin",
-        stripeAccountId: "admin",
+        stripeAccountId: adminAccount.id,
       },
     });
     console.log("Created admin tenant.");

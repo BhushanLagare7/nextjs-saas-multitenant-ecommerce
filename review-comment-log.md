@@ -523,4 +523,26 @@ This log tracks code review comments generated during development and the subseq
   - _Issue:_ Product and library procedures issue unaggregated review queries or per-item Promise.all calls.
   - _Action:_ Refactor the product and library getMany/getOne procedures to stop querying all reviews with pagination disabled or issuing per-item Promise.all review queries. Read reviewCount, reviewRating, and ratingDistribution from the product’s cached fields, and add or reuse reviews collection afterChange/afterDelete hooks to asynchronously maintain those aggregates on the related product.
 
+---
+
+### 🔗 PR-24: feat(users): add role-based access control and product content field
+
+- **Commit SHA:** `256dd6cdaed1b14feca311190a1af5b80a99f12e`
+
+#### Inline Comments
+
+- [ ] **[src/collections/Users.ts](src/collections/Users.ts) (Lines 28-32)**
+  - _Issue:_ Collection-level access logic in update handler.
+  - _Action:_ Update the collection-level access logic in the Users collection’s update handler to distinguish document checks from collection checks: when id is undefined, return a query constraint scoped to the authenticated user’s own id, and deny unauthenticated requests instead of comparing undefined values. Preserve the super-admin bypass and existing own-document boolean check when id is present.
+- [ ] **[src/modules/library/ui/views/product-view.tsx](src/modules/library/ui/views/product-view.tsx) (Lines 46-48)**
+  - _Issue:_ Textarea line breaks rendering.
+  - _Action:_ Update the content rendering branch in the product view to preserve textarea line breaks by applying pre-wrap whitespace styling to the rendered element. If Markdown support is intended by the collection configuration, parse and render data.content through the project’s Markdown renderer instead of displaying raw text, while preserving the existing empty-content fallback.
+
+#### Nitpick Comments
+
+- [ ] **[src/collections/Orders.ts](src/collections/Orders.ts) (Lines 7-12)**
+  - _Issue:_ Access policies for Orders and Reviews.
+  - _Action:_ Verify the access policies for Orders and Reviews before changing them: in src/collections/Orders.ts lines 7-12, ensure users can place and view only their own orders if direct Payload API access is required; apply the corresponding review submission and reading rules in src/collections/Reviews.ts lines 7-12. Preserve super-admin access and keep all operations restricted if end-users are not intended to use these APIs.
+
+
 
