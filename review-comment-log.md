@@ -591,3 +591,30 @@ This log tracks code review comments generated during development and the subseq
 - [ ] **[src/modules/products/server/procedures.ts](src/modules/products/server/procedures.ts) (Lines 33-38)**
   - _Issue:_ Scope and privacy validation in getOne.
   - _Action:_ Update the getOne procedure to accept tenantSlug and validate it against the fetched product’s tenant before returning it. Preserve archived-product rejection, and reject private products unless the supplied tenant scope is permitted and matches the product tenant, aligning visibility with getMany.
+
+---
+
+### 🔗 PR-27: feat(tenant): add multi-tenant subdomain routing and auth cookie settings
+
+- **Commit SHA:** `3af98f5d079aa3b1c3b05ee45bd7b3af9cc2f69a`
+
+#### Inline Comments
+
+- [ ] **[proxy.ts](proxy.ts) (Lines 23-27)**
+  - _Issue:_ Hostname rewrite does not preserve query parameters.
+  - _Action:_ Update the hostname rewrite branch to preserve query parameters from req.url: clone the request URL, replace only its pathname with the tenant route containing tenantSlug and url.pathname, and pass the modified URL to NextResponse.rewrite.
+- [ ] **[proxy.ts](proxy.ts) (Lines 19-24)**
+  - _Issue:_ Port not removed from Host header.
+  - _Action:_ Update the hostname handling in the tenant-matching logic to remove the port from the Host header before comparing it with rootDomain or deriving tenantSlug. Preserve the existing root-domain suffix check and tenant extraction behavior once the normalized hostname is used.
+- [ ] **[review-comment-log.md](review-comment-log.md) (Lines 567-569)**
+  - _Issue:_ Missing compensating cleanup on registration post-provisioning failure.
+  - _Action:_ Update the registration procedure around stripe.accounts.create() and subsequent ctx.db.create persistence so all post-provisioning failures enter compensating cleanup. Delete the newly created Stripe account before rethrowing the original persistence error; if deletion fails, queue reconciliation for the orphaned account while preserving the original failure as the thrown error.
+- [ ] **[review-comment-log.md](review-comment-log.md) (Lines 561-563)**
+  - _Issue:_ Non-idempotent stripe checkout webhook order creation.
+  - _Action:_ Update the webhook handler’s order-creation loop in the Stripe route to persist a per-line-item idempotency key, such as the checkout session ID combined with item.id, instead of using stripeCheckoutSessionId alone; enforce that key with a database-level unique constraint. Retain the existing pre-check, and catch duplicate-key errors from payload.create so the duplicate line item is skipped while other unprocessed items continue.
+- [ ] **[src/lib/utils.ts](src/lib/utils.ts) (Lines 9-18)**
+  - _Issue:_ Missing configuration validation for environment variables.
+  - _Action:_ Validate NEXT_PUBLIC_APP_URL and NEXT_PUBLIC_ROOT_DOMAIN at configuration load time before generateTenantURL constructs links, failing fast when either is missing instead of relying on non-null assertions. In src/lib/utils.ts lines 9-18, use the validated configuration values for development and production URLs; in src/modules/tenants/ui/components/footer.tsx line 16, consume the validated root application URL rather than asserting an optional environment variable.
+- [ ] **[src/modules/auth/utils.ts](src/modules/auth/utils.ts) (Lines 16-18)**
+  - _Issue:_ Incorrect auth cookie configuration for development and production environments.
+  - _Action:_ Update the auth cookie options near the sameSite, domain, and secure settings: use cross-subdomain SameSite=None and NEXT_PUBLIC_ROOT_DOMAIN only in production, require the domain value whenever it is set, and fall back locally to host-only SameSite=Lax with no domain while preserving secure=false outside production.
