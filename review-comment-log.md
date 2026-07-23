@@ -618,3 +618,18 @@ This log tracks code review comments generated during development and the subseq
 - [ ] **[src/modules/auth/utils.ts](src/modules/auth/utils.ts) (Lines 16-18)**
   - _Issue:_ Incorrect auth cookie configuration for development and production environments.
   - _Action:_ Update the auth cookie options near the sameSite, domain, and secure settings: use cross-subdomain SameSite=None and NEXT_PUBLIC_ROOT_DOMAIN only in production, require the domain value whenever it is set, and fall back locally to host-only SameSite=Lax with no domain while preserving secure=false outside production.
+
+---
+
+### 🔗 PR-28: refactor: optimize dynamic pages, mobile hook, and tenant routing
+
+- **Commit SHA:** `d5f67d990a6ec43fa4e3c80fcd16d2e088a5a4ca`
+
+#### Inline Comments
+
+- [ ] **[src/hooks/use-mobile.ts](src/hooks/use-mobile.ts) (Lines 6-13)**
+  - _Issue:_ Unstable useSyncExternalStore callbacks in useIsMobile hook.
+  - _Action:_ Update useIsMobile’s useSyncExternalStore setup so the subscribe and getSnapshot callbacks are stable across renders, using hoisted functions or useCallback while preserving the existing matchMedia listener behavior and server snapshot of false.
+- [ ] **[src/lib/utils.ts](src/lib/utils.ts) (Lines 9-14)**
+  - _Issue:_ Missing routing configuration validation and unvalidated checkout redirect URLs.
+  - _Action:_ Validate NEXT_PUBLIC_ROOT_DOMAIN and NEXT_PUBLIC_APP_URL before selecting the routing mode in this utility, requiring the domain value for production subdomain routing and the app URL for the fallback path. Fail fast with a clear configuration error when the required value is missing, then use the validated values for Stripe checkout redirect URLs instead of interpolation with undefined or a non-null assertion.
