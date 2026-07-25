@@ -26,6 +26,11 @@ export const SearchInput = ({ defaultValue, onChange, disabled }: Props) => {
   const session = useQuery(trpc.auth.session.queryOptions());
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setSearchValue(defaultValue ?? "");
+  }, [defaultValue]);
+
+  useEffect(() => {
     const timeoutId = setTimeout(() => {
       onChange?.(searchValue);
     }, 500);

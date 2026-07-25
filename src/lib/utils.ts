@@ -22,6 +22,20 @@ export function generateTenantURL(tenantSlug: string) {
   return `${protocol}://${tenantSlug}.${domain}`;
 }
 
+export function generateMainAppURL(path: string) {
+  const isDevelopment = process.env.NODE_ENV === "development";
+  const isSubdomainRoutingEnabled =
+    process.env.NEXT_PUBLIC_ENABLE_SUBDOMAIN_ROUTING === "true";
+
+  const cleanPath = path.startsWith("/") ? path : `/${path}`;
+
+  if (isDevelopment || !isSubdomainRoutingEnabled) {
+    return cleanPath;
+  }
+
+  return `${process.env.NEXT_PUBLIC_APP_URL}${cleanPath}`;
+}
+
 export function formatCurrency(value: number | string) {
   return new Intl.NumberFormat("en-US", {
     style: "currency",
