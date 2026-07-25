@@ -1,10 +1,9 @@
-import { dehydrate, HydrationBoundary } from "@tanstack/react-query";
 import type { SearchParams } from "nuqs/server";
 
 import { DEFAULT_LIMIT } from "@/constants";
 import { loadProductFilters } from "@/modules/products/search-params";
 import { ProductListView } from "@/modules/products/ui/views/product-list-view";
-import { getQueryClient, trpc } from "@/trpc/server";
+import { HydrateClient, prefetch, trpc } from "@/trpc/server";
 
 export const dynamic = "force-dynamic";
 
@@ -20,8 +19,7 @@ export default async function TenantsHomePage({
   const { slug } = await params;
   const filters = await loadProductFilters(searchParams);
 
-  const queryClient = getQueryClient();
-  void queryClient.prefetchInfiniteQuery(
+  void prefetch(
     trpc.products.getMany.infiniteQueryOptions(
       {
         ...filters,
@@ -37,8 +35,8 @@ export default async function TenantsHomePage({
   );
 
   return (
-    <HydrationBoundary state={dehydrate(queryClient)}>
+    <HydrateClient>
       <ProductListView narrowView tenantSlug={slug} />
-    </HydrationBoundary>
+    </HydrateClient>
   );
 }
