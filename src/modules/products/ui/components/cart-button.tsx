@@ -1,7 +1,7 @@
 import Link from "next/link";
 
 import { Button } from "@/components/ui/button";
-import { cn } from "@/lib/utils";
+import { cn, generateMainAppURL } from "@/lib/utils";
 import { useCart } from "@/modules/checkout/hooks/use-cart";
 
 interface Props {
@@ -20,7 +20,7 @@ export const CartButton = ({ tenantSlug, productId, isPurchased }: Props) => {
         className="flex-1 bg-white font-medium"
         variant="elevated"
       >
-        <Link href={`/library/${productId}`} prefetch>
+        <Link href={generateMainAppURL(`/library/${productId}`)}>
           View in Library
         </Link>
       </Button>

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
 
 import { useQuery } from "@tanstack/react-query";
@@ -14,13 +14,29 @@ import { CategoriesSidebar } from "./categories-sidebar";
 
 interface Props {
   disabled?: boolean;
+  defaultValue?: string;
+  onChange?: (value: string) => void;
 }
 
-export const SearchInput = ({ disabled }: Props) => {
+export const SearchInput = ({ defaultValue, onChange, disabled }: Props) => {
+  const [searchValue, setSearchValue] = useState(defaultValue ?? "");
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
   const trpc = useTRPC();
   const session = useQuery(trpc.auth.session.queryOptions());
+
+  useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setSearchValue(defaultValue ?? "");
+  }, [defaultValue]);
+
+  useEffect(() => {
+    const timeoutId = setTimeout(() => {
+      onChange?.(searchValue);
+    }, 500);
+
+    return () => clearTimeout(timeoutId);
+  }, [searchValue, onChange]);
 
   return (
     <div className="flex w-full items-center gap-2">
@@ -31,6 +47,8 @@ export const SearchInput = ({ disabled }: Props) => {
           className="pl-8"
           disabled={disabled}
           placeholder="Search products"
+          value={searchValue}
+          onChange={(e) => setSearchValue(e.target.value)}
         />
       </div>
       <Button

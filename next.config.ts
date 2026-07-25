@@ -7,4 +7,4 @@ const nextConfig: NextConfig = {
   devIndicators: false,
 };
 
-export default withPayload(withPayload(nextConfig));
+export default withPayload(nextConfig);
