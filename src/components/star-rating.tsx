@@ -10,14 +10,14 @@ interface StarRatingProps {
   className?: string;
   iconClassName?: string;
   text?: string;
-};
+}
 
-export const StarRating = ({
+export function StarRating({
   rating,
   className,
   iconClassName,
   text,
-}: StarRatingProps) => {
+}: StarRatingProps) {
   const safeRating = Math.max(MIN_RATING, Math.min(rating, MAX_RATING));
 
   return (
@@ -35,4 +35,4 @@ export const StarRating = ({
       {text && <p>{text}</p>}
     </div>
   );
-};
+}

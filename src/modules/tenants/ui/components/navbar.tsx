@@ -26,11 +26,11 @@ const CheckoutButton = dynamic(
   },
 );
 
-interface Props {
+interface NavbarProps {
   slug: string;
 }
 
-export const Navbar = ({ slug }: Props) => {
+export function Navbar({ slug }: NavbarProps) {
   const trpc = useTRPC();
   const { data } = useSuspenseQuery(trpc.tenants.getOne.queryOptions({ slug }));
 
@@ -44,7 +44,7 @@ export const Navbar = ({ slug }: Props) => {
           {data.image?.url && (
             <Image
               alt={slug}
-              className="size-[32px] shrink-0 rounded-full border"
+              className="size-8 shrink-0 rounded-full border"
               height={32}
               src={data.image.url}
               width={32}
@@ -56,9 +56,9 @@ export const Navbar = ({ slug }: Props) => {
       </div>
     </nav>
   );
-};
+}
 
-export const NavbarSkeleton = () => {
+export function NavbarSkeleton() {
   return (
     <nav className="h-20 border-b bg-white font-medium">
       <div className="mx-auto flex h-full max-w-(--breakpoint-xl) items-center justify-between px-4 lg:px-12">
@@ -69,4 +69,4 @@ export const NavbarSkeleton = () => {
       </div>
     </nav>
   );
-};
+}

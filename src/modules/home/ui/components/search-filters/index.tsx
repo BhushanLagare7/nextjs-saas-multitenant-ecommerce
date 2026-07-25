@@ -13,7 +13,7 @@ import { BreadcrumbNavigation } from "./breadcrumb-navigation";
 import { Categories } from "./categories";
 import { SearchInput } from "./search-input";
 
-export const SearchFilters = () => {
+export function SearchFilters() {
   const trpc = useTRPC();
   const { data } = useSuspenseQuery(trpc.categories.getMany.queryOptions());
 
@@ -57,9 +57,9 @@ export const SearchFilters = () => {
       />
     </div>
   );
-};
+}
 
-export const SearchFiltersSkeleton = () => {
+export function SearchFiltersSkeleton() {
   return (
     <div
       className="flex w-full flex-col gap-4 border-b px-4 py-8 lg:px-12"
@@ -73,4 +73,4 @@ export const SearchFiltersSkeleton = () => {
       </div>
     </div>
   );
-};
+}

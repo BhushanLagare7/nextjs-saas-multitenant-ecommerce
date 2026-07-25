@@ -18,6 +18,6 @@ export const tagsRouter = createTRPCRouter({
         limit: input.limit,
       });
 
-      return data
+      return data;
     }),
 });

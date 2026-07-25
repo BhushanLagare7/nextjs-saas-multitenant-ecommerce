@@ -25,7 +25,7 @@ interface NavbarItemProps {
   isActive?: boolean;
 }
 
-const NavbarItem = ({ href, children, isActive }: NavbarItemProps) => {
+function NavbarItem({ href, children, isActive }: NavbarItemProps) {
   return (
     <Button
       asChild
@@ -38,7 +38,7 @@ const NavbarItem = ({ href, children, isActive }: NavbarItemProps) => {
       <Link href={href}>{children}</Link>
     </Button>
   );
-};
+}
 
 const navbarItems = [
   { href: "/", children: "Home" },
@@ -48,7 +48,7 @@ const navbarItems = [
   { href: "/contact", children: "Contact" },
 ];
 
-export const Navbar = () => {
+export function Navbar() {
   const pathname = usePathname();
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
@@ -123,4 +123,4 @@ export const Navbar = () => {
       </div>
     </nav>
   );
-};
+}

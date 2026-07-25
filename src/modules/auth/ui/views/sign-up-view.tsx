@@ -31,7 +31,7 @@ const poppins = Poppins({
   weight: ["700"],
 });
 
-export const SignUpView = () => {
+export function SignUpView() {
   const router = useRouter();
 
   const trpc = useTRPC();
@@ -163,4 +163,4 @@ export const SignUpView = () => {
       />
     </div>
   );
-};
+}

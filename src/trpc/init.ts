@@ -5,12 +5,14 @@ import config from "@payload-config";
 import { initTRPC, TRPCError } from "@trpc/server";
 import { getPayload } from "payload";
 import superjson from "superjson";
-export const createTRPCContext = cache(async () => {
-  /**
-   * @see: https://trpc.io/docs/server/context
-   */
+/**
+ * @see: https://trpc.io/docs/server/context
+ */
+async function createTRPCContextFactory() {
   return { userId: "user_123" };
-});
+}
+
+export const createTRPCContext = cache(createTRPCContextFactory);
 // Avoid exporting the entire t-object
 // since it's not very descriptive.
 // For instance, the use of a t variable

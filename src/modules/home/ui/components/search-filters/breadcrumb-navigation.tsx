@@ -9,17 +9,17 @@ import {
   BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb";
 
-interface Props {
+interface BreadcrumbNavigationProps {
   activeCategoryName?: string | null;
   activeCategory?: string | null;
   activeSubcategoryName?: string | null;
-};
+}
 
-export const BreadcrumbNavigation = ({
+export function BreadcrumbNavigation({
   activeCategoryName,
   activeCategory,
   activeSubcategoryName,
-}: Props) => {
+}: BreadcrumbNavigationProps) {
   if (!activeCategoryName || activeCategory === "all") return null;
 
   return (
@@ -28,11 +28,14 @@ export const BreadcrumbNavigation = ({
         {activeSubcategoryName ? (
           <>
             <BreadcrumbItem>
-              <BreadcrumbLink asChild className="text-xl font-medium underline text-primary">
+              <BreadcrumbLink
+                asChild
+                className="text-primary text-xl font-medium underline"
+              >
                 <Link href={`/${activeCategory}`}>{activeCategoryName}</Link>
               </BreadcrumbLink>
             </BreadcrumbItem>
-            <BreadcrumbSeparator className="text-primary font-medium text-lg">
+            <BreadcrumbSeparator className="text-primary text-lg font-medium">
               /
             </BreadcrumbSeparator>
             <BreadcrumbItem>
@@ -50,5 +53,5 @@ export const BreadcrumbNavigation = ({
         )}
       </BreadcrumbList>
     </Breadcrumb>
-  )
-};
+  );
+}

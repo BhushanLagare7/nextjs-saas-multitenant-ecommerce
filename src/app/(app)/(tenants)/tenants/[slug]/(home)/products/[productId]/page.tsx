@@ -1,36 +1,33 @@
 import { Suspense } from "react";
 
-import { dehydrate, HydrationBoundary } from "@tanstack/react-query";
-
 import {
   ProductView,
   ProductViewSkeleton,
 } from "@/modules/products/ui/views/product-view";
-import { getQueryClient, trpc } from "@/trpc/server";
+import { HydrateClient, prefetch, trpc } from "@/trpc/server";
 
 export const dynamic = "force-dynamic";
 
-interface Props {
+interface TenantsProductIdPageProps {
   params: Promise<{ productId: string; slug: string }>;
 }
 
-const Page = async ({ params }: Props) => {
+export default async function TenantsProductIdPage({
+  params,
+}: TenantsProductIdPageProps) {
   const { productId, slug } = await params;
 
-  const queryClient = getQueryClient();
-  void queryClient.prefetchQuery(
+  void prefetch(
     trpc.tenants.getOne.queryOptions({
       slug,
     }),
   );
 
   return (
-    <HydrationBoundary state={dehydrate(queryClient)}>
+    <HydrateClient>
       <Suspense fallback={<ProductViewSkeleton />}>
         <ProductView productId={productId} tenantSlug={slug} />
       </Suspense>
-    </HydrationBoundary>
+    </HydrateClient>
   );
-};
-
-export default Page;
+}

@@ -3,14 +3,14 @@ import { ChangeEvent } from "react";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 
-interface Props {
+interface PriceFilterProps {
   minPrice?: string | null;
   maxPrice?: string | null;
   onMinPriceChange: (value: string) => void;
   onMaxPriceChange: (value: string) => void;
 }
 
-export const formatAsCurrency = (value: string) => {
+export function formatAsCurrency(value: string) {
   const numericValue = value.replace(/[^0-9.]/g, "");
 
   const parts = numericValue.split(".");
@@ -28,14 +28,14 @@ export const formatAsCurrency = (value: string) => {
     minimumFractionDigits: 0,
     maximumFractionDigits: 2,
   }).format(numberValue);
-};
+}
 
-export const PriceFilter = ({
+export function PriceFilter({
   minPrice,
   maxPrice,
   onMinPriceChange,
   onMaxPriceChange,
-}: Props) => {
+}: PriceFilterProps) {
   const handleMinPriceChange = (e: ChangeEvent<HTMLInputElement>) => {
     // Get the raw input value and extract only numeric values
     const numericValue = e.target.value.replace(/[^0-9.]/g, "");
@@ -51,9 +51,7 @@ export const PriceFilter = ({
   return (
     <div className="flex flex-col gap-2">
       <div className="flex flex-col gap-2">
-        <Label className="font-medium text-base">
-          Minimum price
-        </Label>
+        <Label className="text-base font-medium">Minimum price</Label>
         <Input
           placeholder="$0"
           type="text"
@@ -62,9 +60,7 @@ export const PriceFilter = ({
         />
       </div>
       <div className="flex flex-col gap-2">
-        <Label className="font-medium text-base">
-          Maximum price
-        </Label>
+        <Label className="text-base font-medium">Maximum price</Label>
         <Input
           placeholder="∞" // Infinity sign
           type="text"
@@ -73,5 +69,5 @@ export const PriceFilter = ({
         />
       </div>
     </div>
-  )
-};
+  );
+}

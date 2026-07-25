@@ -5,7 +5,7 @@ import { caller } from "@/trpc/server";
 
 export const dynamic = "force-dynamic";
 
-const Page = async () => {
+export default async function SignUpPage() {
   const session = await caller.auth.session();
 
   if (session.user) {
@@ -13,6 +13,4 @@ const Page = async () => {
   }
 
   return <SignUpView />;
-};
-
-export default Page;
+}

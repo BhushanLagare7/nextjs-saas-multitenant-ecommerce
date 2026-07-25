@@ -1,26 +1,27 @@
-import { dehydrate, HydrationBoundary } from "@tanstack/react-query";
 import { SearchParams } from "nuqs/server";
 
 import { DEFAULT_LIMIT } from "@/constants";
 import { loadProductFilters } from "@/modules/products/search-params";
 import { ProductListView } from "@/modules/products/ui/views/product-list-view";
-import { getQueryClient, trpc } from "@/trpc/server";
+import { HydrateClient, prefetch, trpc } from "@/trpc/server";
 
 export const dynamic = "force-dynamic";
 
-interface Props {
+interface CategorySubcategoryPageProps {
   params: Promise<{
     subcategory: string;
   }>;
   searchParams: Promise<SearchParams>;
 }
 
-const Page = async ({ params, searchParams }: Props) => {
+export default async function CategorySubcategoryPage({
+  params,
+  searchParams,
+}: CategorySubcategoryPageProps) {
   const { subcategory } = await params;
   const filters = await loadProductFilters(searchParams);
 
-  const queryClient = getQueryClient();
-  void queryClient.prefetchInfiniteQuery(
+  void prefetch(
     trpc.products.getMany.infiniteQueryOptions(
       {
         ...filters,
@@ -36,10 +37,8 @@ const Page = async ({ params, searchParams }: Props) => {
   );
 
   return (
-    <HydrationBoundary state={dehydrate(queryClient)}>
+    <HydrateClient>
       <ProductListView category={subcategory} />
-    </HydrationBoundary>
+    </HydrateClient>
   );
-};
-
-export default Page;
+}

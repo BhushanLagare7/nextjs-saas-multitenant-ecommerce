@@ -12,9 +12,9 @@ interface CheckoutItemProps {
   tenantName: string;
   price: number;
   onRemove: () => void;
-};
+}
 
-export const CheckoutItem = ({
+export function CheckoutItem({
   isLast,
   imageUrl,
   name,
@@ -23,12 +23,12 @@ export const CheckoutItem = ({
   tenantName,
   price,
   onRemove,
-}: CheckoutItemProps) => {
+}: CheckoutItemProps) {
   return (
     <div
       className={cn(
-        "grid grid-cols-[8.5rem_1fr_auto] gap-4 pr-4 border-b",
-        isLast && "border-b-0"
+        "grid grid-cols-[8.5rem_1fr_auto] gap-4 border-b pr-4",
+        isLast && "border-b-0",
       )}
     >
       <div className="overflow-hidden border-r">
@@ -42,7 +42,7 @@ export const CheckoutItem = ({
         </div>
       </div>
 
-      <div className="py-4 flex flex-col justify-between">
+      <div className="flex flex-col justify-between py-4">
         <div>
           <Link href={productUrl}>
             <h4 className="font-bold underline">{name}</h4>
@@ -53,14 +53,16 @@ export const CheckoutItem = ({
         </div>
       </div>
 
-      <div className="py-4 flex flex-col justify-between">
-        <p className="font-medium">
-          {formatCurrency(price)}
-        </p>
-        <button className="underline font-medium cursor-pointer" type="button" onClick={onRemove}>
+      <div className="flex flex-col justify-between py-4">
+        <p className="font-medium">{formatCurrency(price)}</p>
+        <button
+          className="cursor-pointer font-medium underline"
+          type="button"
+          onClick={onRemove}
+        >
           Remove
         </button>
       </div>
     </div>
   );
-};
+}

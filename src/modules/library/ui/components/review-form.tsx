@@ -19,7 +19,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { ReviewsGetOneOutput } from "@/modules/reviews/types";
 import { useTRPC } from "@/trpc/client";
 
-interface Props {
+interface ReviewFormProps {
   productId: string;
   initialData?: ReviewsGetOneOutput;
 }
@@ -29,7 +29,7 @@ const formSchema = z.object({
   description: z.string().min(1, { message: "Description is required" }),
 });
 
-export const ReviewForm = ({ productId, initialData }: Props) => {
+export function ReviewForm({ productId, initialData }: ReviewFormProps) {
   const [isPreview, setIsPreview] = useState(!!initialData);
 
   const trpc = useTRPC();
@@ -155,9 +155,9 @@ export const ReviewForm = ({ productId, initialData }: Props) => {
       )}
     </Form>
   );
-};
+}
 
-export const ReviewFormSkeleton = () => {
+export function ReviewFormSkeleton() {
   return (
     <div className="flex flex-col gap-y-4">
       <p className="font-medium">Liked it? Give it a rating</p>
@@ -174,4 +174,4 @@ export const ReviewFormSkeleton = () => {
       </Button>
     </div>
   );
-};
+}

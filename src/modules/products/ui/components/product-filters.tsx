@@ -17,7 +17,7 @@ interface ProductFilterProps {
   children: React.ReactNode;
 }
 
-const ProductFilter = ({ title, className, children }: ProductFilterProps) => {
+function ProductFilter({ title, className, children }: ProductFilterProps) {
   const [isOpen, setIsOpen] = useState(false);
 
   const Icon = isOpen ? ChevronDownIcon : ChevronRightIcon;
@@ -34,9 +34,9 @@ const ProductFilter = ({ title, className, children }: ProductFilterProps) => {
       {isOpen && children}
     </div>
   );
-};
+}
 
-export const ProductFilters = () => {
+export function ProductFilters() {
   const [filters, setFilters] = useProductFilters();
 
   const hasAnyFilters = Object.entries(filters).some(([key, value]) => {
@@ -95,4 +95,4 @@ export const ProductFilters = () => {
       </ProductFilter>
     </div>
   );
-};
+}

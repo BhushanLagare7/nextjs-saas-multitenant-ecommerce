@@ -11,14 +11,14 @@ interface StarPickerProps {
   onChange?: (value: number) => void;
   disabled?: boolean;
   className?: string;
-};
+}
 
-export const StarPicker = ({
+export function StarPicker({
   value = 0,
   onChange,
   disabled,
   className,
-}: StarPickerProps) => {
+}: StarPickerProps) {
   const [hoverValue, setHoverValue] = useState(0);
 
   const handleChange = (value: number) => {
@@ -29,7 +29,7 @@ export const StarPicker = ({
     <div
       className={cn(
         "flex items-center",
-        disabled && "opacity-50 cursor-not-allowed",
+        disabled && "cursor-not-allowed opacity-50",
         className,
       )}
     >
@@ -37,8 +37,8 @@ export const StarPicker = ({
         <button
           key={star}
           className={cn(
-            "p-0.5 hover:scale-110 transition",
-            !disabled && "cursor-pointer"
+            "p-0.5 transition hover:scale-110",
+            !disabled && "cursor-pointer",
           )}
           disabled={disabled}
           type="button"
@@ -51,11 +51,11 @@ export const StarPicker = ({
               "size-5",
               (hoverValue || value) >= star
                 ? "fill-black stroke-black"
-                : "stroke-black"
+                : "stroke-black",
             )}
           />
         </button>
       ))}
     </div>
   );
-};
+}

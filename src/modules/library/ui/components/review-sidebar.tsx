@@ -4,20 +4,17 @@ import { useTRPC } from "@/trpc/client";
 
 import { ReviewForm } from "./review-form";
 
-interface Props {
+interface ReviewSidebarProps {
   productId: string;
 }
 
-export const ReviewSidebar = ({ productId }: Props) => {
+export function ReviewSidebar({ productId }: ReviewSidebarProps) {
   const trpc = useTRPC();
-  const { data } = useSuspenseQuery(trpc.reviews.getOne.queryOptions({
-    productId,
-  }));
-
-  return (
-    <ReviewForm
-      initialData={data}
-      productId={productId}
-    />
+  const { data } = useSuspenseQuery(
+    trpc.reviews.getOne.queryOptions({
+      productId,
+    }),
   );
-};
+
+  return <ReviewForm initialData={data} productId={productId} />;
+}

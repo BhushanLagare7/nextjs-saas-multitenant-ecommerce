@@ -33,7 +33,7 @@ interface ProductViewProps {
   tenantSlug: string;
 }
 
-export const ProductView = ({ productId, tenantSlug }: ProductViewProps) => {
+export function ProductView({ productId, tenantSlug }: ProductViewProps) {
   const trpc = useTRPC();
   const { data } = useSuspenseQuery(
     trpc.products.getOne.queryOptions({ id: productId }),
@@ -74,7 +74,7 @@ export const ProductView = ({ productId, tenantSlug }: ProductViewProps) => {
                   {data.tenant.image?.url && (
                     <Image
                       alt={data.tenant.name}
-                      className="size-[20px] shrink-0 rounded-full border"
+                      className="size-5 shrink-0 rounded-full border"
                       height={20}
                       src={data.tenant.image.url}
                       width={20}
@@ -169,7 +169,7 @@ export const ProductView = ({ productId, tenantSlug }: ProductViewProps) => {
                         {stars} {stars === 1 ? "star" : "stars"}
                       </div>
                       <Progress
-                        className="h-[1lh]"
+                        className="h-lh"
                         value={data.ratingDistribution[stars]}
                       />
                       <div className="font-medium">
@@ -185,9 +185,9 @@ export const ProductView = ({ productId, tenantSlug }: ProductViewProps) => {
       </div>
     </div>
   );
-};
+}
 
-export const ProductViewSkeleton = () => {
+export function ProductViewSkeleton() {
   return (
     <div className="px-4 py-10 lg:px-12">
       <div className="overflow-hidden rounded-sm border bg-white">
@@ -202,4 +202,4 @@ export const ProductViewSkeleton = () => {
       </div>
     </div>
   );
-};
+}

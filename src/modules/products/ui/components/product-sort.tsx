@@ -3,9 +3,9 @@
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
-import { useProductFilters } from "../../hooks/use-product-filters"
+import { useProductFilters } from "../../hooks/use-product-filters";
 
-export const ProductSort = () => {
+export function ProductSort() {
   const [filters, setFilters] = useProductFilters();
 
   return (
@@ -14,7 +14,7 @@ export const ProductSort = () => {
         className={cn(
           "rounded-full bg-white hover:bg-white",
           filters.sort !== "curated" &&
-            "bg-transparent border-transparent hover:border-border hover:bg-transparent"
+            "hover:border-border border-transparent bg-transparent hover:bg-transparent",
         )}
         size="sm"
         variant="secondary"
@@ -26,7 +26,7 @@ export const ProductSort = () => {
         className={cn(
           "rounded-full bg-white hover:bg-white",
           filters.sort !== "trending" &&
-            "bg-transparent border-transparent hover:border-border hover:bg-transparent"
+            "hover:border-border border-transparent bg-transparent hover:bg-transparent",
         )}
         size="sm"
         variant="secondary"
@@ -38,7 +38,7 @@ export const ProductSort = () => {
         className={cn(
           "rounded-full bg-white hover:bg-white",
           filters.sort !== "hot_and_new" &&
-            "bg-transparent border-transparent hover:border-border hover:bg-transparent"
+            "hover:border-border border-transparent bg-transparent hover:bg-transparent",
         )}
         size="sm"
         variant="secondary"
@@ -48,4 +48,4 @@ export const ProductSort = () => {
       </Button>
     </div>
   );
-};
+}

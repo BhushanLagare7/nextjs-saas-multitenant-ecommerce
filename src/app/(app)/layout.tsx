@@ -25,11 +25,11 @@ export const metadata: Metadata = {
   },
 };
 
-export default function RootLayout({
-  children,
-}: Readonly<{
+interface AppLayoutProps {
   children: React.ReactNode;
-}>) {
+}
+
+export default function AppLayout({ children }: AppLayoutProps) {
   return (
     <html lang="en">
       <body className={`${dmSans.className} antialiased`}>

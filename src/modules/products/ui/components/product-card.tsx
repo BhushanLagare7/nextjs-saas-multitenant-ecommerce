@@ -18,7 +18,7 @@ interface ProductCardProps {
   price: number;
 }
 
-export const ProductCard = ({
+export function ProductCard({
   id,
   name,
   imageUrl,
@@ -27,7 +27,7 @@ export const ProductCard = ({
   reviewRating,
   reviewCount,
   price,
-}: ProductCardProps) => {
+}: ProductCardProps) {
   const router = useRouter();
 
   const handleUserClick = (e: React.MouseEvent<HTMLDivElement>) => {
@@ -54,7 +54,7 @@ export const ProductCard = ({
             {tenantImageUrl && (
               <Image
                 alt={tenantSlug}
-                className="size-[16px] shrink-0 rounded-full border"
+                className="size-4 shrink-0 rounded-full border"
                 height={16}
                 src={tenantImageUrl}
                 width={16}
@@ -79,10 +79,10 @@ export const ProductCard = ({
       </div>
     </Link>
   );
-};
+}
 
-export const ProductCardSkeleton = () => {
+export function ProductCardSkeleton() {
   return (
     <div className="aspect-3/4 w-full animate-pulse rounded-lg bg-neutral-200" />
   );
-};
+}

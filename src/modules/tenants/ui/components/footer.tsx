@@ -8,7 +8,7 @@ const poppins = Poppins({
   weight: ["700"],
 });
 
-export const Footer = () => {
+export function Footer() {
   return (
     <footer className="border-t bg-white font-medium">
       <div className="mx-auto flex h-full max-w-(--breakpoint-xl) items-center gap-2 px-4 py-6 lg:px-12">
@@ -21,4 +21,4 @@ export const Footer = () => {
       </div>
     </footer>
   );
-};
+}

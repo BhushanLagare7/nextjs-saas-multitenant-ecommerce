@@ -10,12 +10,12 @@ interface CheckoutSidebarProps {
   disabled?: boolean;
 }
 
-export const CheckoutSidebar = ({
+export function CheckoutSidebar({
   total,
   onPurchase,
   isCanceled,
   disabled,
-}: CheckoutSidebarProps) => {
+}: CheckoutSidebarProps) {
   return (
     <div className="flex flex-col overflow-hidden rounded-md border bg-white">
       <div className="flex items-center justify-between border-b p-4">
@@ -45,4 +45,4 @@ export const CheckoutSidebar = ({
       )}
     </div>
   );
-};
+}
