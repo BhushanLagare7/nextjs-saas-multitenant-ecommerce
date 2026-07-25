@@ -23,14 +23,15 @@ export function CategoryDropdown({
   const [isOpen, setIsOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
-  const onMouseEnter = () => {
+  function onMouseEnter() {
     if (category.subcategories) {
-      console.log("hello");
       setIsOpen(true);
     }
-  };
+  }
 
-  const onMouseLeave = () => setIsOpen(false);
+  function onMouseLeave() {
+    setIsOpen(false);
+  }
 
   return (
     <div

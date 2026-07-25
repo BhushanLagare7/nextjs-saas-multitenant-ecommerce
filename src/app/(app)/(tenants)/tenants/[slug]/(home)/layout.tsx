@@ -4,15 +4,15 @@ import { Footer } from "@/modules/tenants/ui/components/footer";
 import { Navbar, NavbarSkeleton } from "@/modules/tenants/ui/components/navbar";
 import { HydrateClient, prefetch, trpc } from "@/trpc/server";
 
-interface TenantsHomeLayoutProps {
+interface TenantsLayoutProps {
   children: React.ReactNode;
   params: Promise<{ slug: string }>;
 }
 
-export default async function TenantsHomeLayout({
+export default async function TenantsLayout({
   children,
   params,
-}: TenantsHomeLayoutProps) {
+}: TenantsLayoutProps) {
   const { slug } = await params;
 
   void prefetch(
