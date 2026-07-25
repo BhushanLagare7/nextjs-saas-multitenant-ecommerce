@@ -8,14 +8,17 @@ import { getQueryClient, trpc } from "@/trpc/server";
 
 export const dynamic = "force-dynamic";
 
-interface Props {
+interface CategorySubcategoryPageProps {
   params: Promise<{
     subcategory: string;
   }>;
   searchParams: Promise<SearchParams>;
 }
 
-const Page = async ({ params, searchParams }: Props) => {
+export default async function CategorySubcategoryPage({
+  params,
+  searchParams,
+}: CategorySubcategoryPageProps) {
   const { subcategory } = await params;
   const filters = await loadProductFilters(searchParams);
 
@@ -40,6 +43,4 @@ const Page = async ({ params, searchParams }: Props) => {
       <ProductListView category={subcategory} />
     </HydrationBoundary>
   );
-};
-
-export default Page;
+}

@@ -6,11 +6,11 @@ import { loadProductFilters } from "@/modules/products/search-params";
 import { ProductListView } from "@/modules/products/ui/views/product-list-view";
 import { getQueryClient, trpc } from "@/trpc/server";
 
-interface Props {
+interface HomePageProps {
   searchParams: Promise<SearchParams>;
 }
 
-const Page = async ({ searchParams }: Props) => {
+export default async function HomePage({ searchParams }: HomePageProps) {
   const filters = await loadProductFilters(searchParams);
 
   const queryClient = getQueryClient();
@@ -33,6 +33,4 @@ const Page = async ({ searchParams }: Props) => {
       <ProductListView />
     </HydrationBoundary>
   );
-};
-
-export default Page;
+}

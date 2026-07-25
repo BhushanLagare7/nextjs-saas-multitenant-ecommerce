@@ -139,7 +139,7 @@ const categories = [
   },
 ];
 
-const seed = async () => {
+async function seed() {
   const payload = await getPayload({ config });
 
   // Check if admin tenant already exists
@@ -260,7 +260,7 @@ const seed = async () => {
       }
     }
   }
-};
+}
 
 try {
   await seed();

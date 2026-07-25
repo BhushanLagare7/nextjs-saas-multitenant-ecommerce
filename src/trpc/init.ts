@@ -5,7 +5,7 @@ import config from "@payload-config";
 import { initTRPC, TRPCError } from "@trpc/server";
 import { getPayload } from "payload";
 import superjson from "superjson";
-export const createTRPCContext = cache(async () => {
+export const createTRPCContext = cache(async function () {
   /**
    * @see: https://trpc.io/docs/server/context
    */

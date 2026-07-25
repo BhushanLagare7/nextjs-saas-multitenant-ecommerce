@@ -10,11 +10,13 @@ import { getQueryClient, trpc } from "@/trpc/server";
 
 export const dynamic = "force-dynamic";
 
-interface Props {
+interface TenantsProductIdPageProps {
   params: Promise<{ productId: string; slug: string }>;
 }
 
-const Page = async ({ params }: Props) => {
+export default async function TenantsProductIdPage({
+  params,
+}: TenantsProductIdPageProps) {
   const { productId, slug } = await params;
 
   const queryClient = getQueryClient();
@@ -31,6 +33,4 @@ const Page = async ({ params }: Props) => {
       </Suspense>
     </HydrationBoundary>
   );
-};
-
-export default Page;
+}

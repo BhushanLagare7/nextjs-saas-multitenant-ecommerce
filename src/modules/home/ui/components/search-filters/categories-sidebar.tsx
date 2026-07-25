@@ -14,12 +14,15 @@ import {
 import { CategoriesGetManyOutput } from "@/modules/categories/types";
 import { useTRPC } from "@/trpc/client";
 
-interface Props {
+interface CategoriesSidebarProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
 }
 
-export const CategoriesSidebar = ({ open, onOpenChange }: Props) => {
+export function CategoriesSidebar({
+  open,
+  onOpenChange,
+}: CategoriesSidebarProps) {
   const trpc = useTRPC();
   const { data } = useQuery(trpc.categories.getMany.queryOptions());
 
@@ -109,4 +112,4 @@ export const CategoriesSidebar = ({ open, onOpenChange }: Props) => {
       </SheetContent>
     </Sheet>
   );
-};
+}

@@ -27,6 +27,6 @@ const params = {
     .withDefault([]),
 };
 
-export const useProductFilters = () => {
+export function useProductFilters() {
   return useQueryStates(params);
-};
+}

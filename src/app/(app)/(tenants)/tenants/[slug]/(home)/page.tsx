@@ -8,12 +8,15 @@ import { getQueryClient, trpc } from "@/trpc/server";
 
 export const dynamic = "force-dynamic";
 
-interface Props {
+interface TenantsHomePageProps {
   searchParams: Promise<SearchParams>;
   params: Promise<{ slug: string }>;
 }
 
-const Page = async ({ params, searchParams }: Props) => {
+export default async function TenantsHomePage({
+  params,
+  searchParams,
+}: TenantsHomePageProps) {
   const { slug } = await params;
   const filters = await loadProductFilters(searchParams);
 
@@ -38,6 +41,4 @@ const Page = async ({ params, searchParams }: Props) => {
       <ProductListView narrowView tenantSlug={slug} />
     </HydrationBoundary>
   );
-};
-
-export default Page;
+}

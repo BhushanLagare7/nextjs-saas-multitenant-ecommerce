@@ -6,7 +6,7 @@ import { getQueryClient, trpc } from "@/trpc/server";
 
 export const dynamic = "force-dynamic";
 
-const Page = async () => {
+export default async function LibraryPage() {
   const queryClient = getQueryClient();
   void queryClient.prefetchInfiniteQuery(
     trpc.library.getMany.infiniteQueryOptions(
@@ -24,6 +24,4 @@ const Page = async () => {
       <LibraryView />
     </HydrationBoundary>
   );
-};
-
-export default Page;
+}

@@ -7,7 +7,7 @@ import { LoaderIcon } from "lucide-react";
 
 import { useTRPC } from "@/trpc/client";
 
-const Page = () => {
+export default function StripeVerifyPage() {
   const trpc = useTRPC();
   const { mutate: verify } = useMutation(
     trpc.checkout.verify.mutationOptions({
@@ -29,6 +29,4 @@ const Page = () => {
       <LoaderIcon className="text-muted-foreground animate-spin" />
     </div>
   );
-};
-
-export default Page;
+}

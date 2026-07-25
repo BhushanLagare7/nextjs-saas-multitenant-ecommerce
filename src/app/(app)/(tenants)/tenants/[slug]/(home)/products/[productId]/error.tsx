@@ -2,15 +2,13 @@
 
 import { TriangleAlertIcon } from "lucide-react";
 
-const ErrorPage = () => {
+export default function TenantsProductIdErrorPage() {
   return (
-    <div className="px-4 lg:px-12 py-10">
-       <div className="border border-black border-dashed flex items-center justify-center p-8 flex-col gap-y-4 bg-white w-full rounded-lg">
+    <div className="px-4 py-10 lg:px-12">
+      <div className="flex w-full flex-col items-center justify-center gap-y-4 rounded-lg border border-dashed border-black bg-white p-8">
         <TriangleAlertIcon />
         <p className="text-base font-medium">Something went wrong</p>
       </div>
     </div>
   );
-};
-
-export default ErrorPage;
+}

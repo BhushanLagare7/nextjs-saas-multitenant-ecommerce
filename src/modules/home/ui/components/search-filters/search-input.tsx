@@ -12,13 +12,17 @@ import { useTRPC } from "@/trpc/client";
 
 import { CategoriesSidebar } from "./categories-sidebar";
 
-interface Props {
+interface SearchInputProps {
   disabled?: boolean;
   defaultValue?: string;
   onChange?: (value: string) => void;
 }
 
-export const SearchInput = ({ defaultValue, onChange, disabled }: Props) => {
+export function SearchInput({
+  defaultValue,
+  onChange,
+  disabled,
+}: SearchInputProps) {
   const [searchValue, setSearchValue] = useState(defaultValue ?? "");
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
@@ -68,4 +72,4 @@ export const SearchInput = ({ defaultValue, onChange, disabled }: Props) => {
       )}
     </div>
   );
-};
+}

@@ -12,11 +12,11 @@ import { useTRPC } from "@/trpc/client";
 import { ReviewFormSkeleton } from "../components/review-form";
 import { ReviewSidebar } from "../components/review-sidebar";
 
-interface Props {
+interface ProductViewProps {
   productId: string;
 }
 
-export const ProductView = ({ productId }: Props) => {
+export function ProductView({ productId }: ProductViewProps) {
   const trpc = useTRPC();
   const { data } = useSuspenseQuery(
     trpc.library.getOne.queryOptions({
@@ -60,9 +60,9 @@ export const ProductView = ({ productId }: Props) => {
       </section>
     </div>
   );
-};
+}
 
-export const ProductViewSkeleton = () => {
+export function ProductViewSkeleton() {
   return (
     <div className="min-h-screen bg-white">
       <nav className="w-full border-b bg-[#F4F4F0] p-4">
@@ -73,4 +73,4 @@ export const ProductViewSkeleton = () => {
       </nav>
     </div>
   );
-};
+}

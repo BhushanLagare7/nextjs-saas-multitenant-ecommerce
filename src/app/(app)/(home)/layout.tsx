@@ -10,11 +10,11 @@ import {
 } from "@/modules/home/ui/components/search-filters";
 import { getQueryClient, trpc } from "@/trpc/server";
 
-interface Props {
+interface HomeLayoutProps {
   children: React.ReactNode;
 }
 
-const Layout = async ({ children }: Props) => {
+export default async function HomeLayout({ children }: HomeLayoutProps) {
   const queryClient = getQueryClient();
   void queryClient.prefetchQuery(trpc.categories.getMany.queryOptions());
 
@@ -30,6 +30,4 @@ const Layout = async ({ children }: Props) => {
       <Footer />
     </div>
   );
-};
-
-export default Layout;
+}

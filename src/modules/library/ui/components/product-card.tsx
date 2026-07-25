@@ -14,7 +14,7 @@ interface ProductCardProps {
   reviewCount: number;
 }
 
-export const ProductCard = ({
+export function ProductCard({
   id,
   name,
   imageUrl,
@@ -22,7 +22,7 @@ export const ProductCard = ({
   tenantImageUrl,
   reviewRating,
   reviewCount,
-}: ProductCardProps) => {
+}: ProductCardProps) {
   return (
     <Link href={`/library/${id}`} prefetch>
       <div className="flex h-full flex-col overflow-hidden rounded-md border bg-white transition-shadow hover:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
@@ -40,7 +40,7 @@ export const ProductCard = ({
             {tenantImageUrl && (
               <Image
                 alt={tenantSlug}
-                className="size-[16px] shrink-0 rounded-full border"
+                className="size-4 shrink-0 rounded-full border"
                 height={16}
                 src={tenantImageUrl}
                 width={16}
@@ -60,10 +60,10 @@ export const ProductCard = ({
       </div>
     </Link>
   );
-};
+}
 
-export const ProductCardSkeleton = () => {
+export function ProductCardSkeleton() {
   return (
     <div className="aspect-3/4 w-full animate-pulse rounded-lg bg-neutral-200" />
   );
-};
+}

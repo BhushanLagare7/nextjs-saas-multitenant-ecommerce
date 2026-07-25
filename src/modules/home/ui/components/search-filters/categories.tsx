@@ -12,11 +12,11 @@ import { CategoriesGetManyOutput } from "@/modules/categories/types";
 import { CategoriesSidebar } from "./categories-sidebar";
 import { CategoryDropdown } from "./category-dropdown";
 
-interface Props {
+interface CategoriesProps {
   data: CategoriesGetManyOutput;
 }
 
-export const Categories = ({ data }: Props) => {
+export function Categories({ data }: CategoriesProps) {
   const params = useParams();
 
   const containerRef = useRef<HTMLDivElement>(null);
@@ -125,4 +125,4 @@ export const Categories = ({ data }: Props) => {
       </div>
     </div>
   );
-};
+}

@@ -4,17 +4,17 @@ import { ProductFilters } from "../components/product-filters";
 import { ProductList, ProductListSkeleton } from "../components/product-list";
 import { ProductSort } from "../components/product-sort";
 
-interface Props {
+interface ProductListViewProps {
   category?: string;
   tenantSlug?: string;
   narrowView?: boolean;
 }
 
-export const ProductListView = ({
+export function ProductListView({
   category,
   tenantSlug,
   narrowView,
-}: Props) => {
+}: ProductListViewProps) {
   return (
     <div className="flex flex-col gap-4 px-4 py-8 lg:px-12">
       <div className="flex flex-col justify-between gap-y-2 lg:flex-row lg:items-center lg:gap-y-0">
@@ -38,4 +38,4 @@ export const ProductListView = ({
       </div>
     </div>
   );
-};
+}

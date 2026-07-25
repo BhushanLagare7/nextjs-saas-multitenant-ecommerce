@@ -1,11 +1,14 @@
 import { cookies as getCookies } from "next/headers";
 
-interface Props {
+interface GenerateAuthCookieProps {
   prefix: string;
   value: string;
 }
 
-export const generateAuthCookie = async ({ prefix, value }: Props) => {
+export async function generateAuthCookie({
+  prefix,
+  value,
+}: GenerateAuthCookieProps) {
   const cookies = await getCookies();
 
   cookies.set({
@@ -21,4 +24,4 @@ export const generateAuthCookie = async ({ prefix, value }: Props) => {
       secure: true,
     }),
   });
-};
+}

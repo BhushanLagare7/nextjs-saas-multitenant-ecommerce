@@ -3,12 +3,12 @@ import Link from "next/link";
 import { CategoriesGetManyOutput } from "@/modules/categories/types";
 import { Category } from "@/payload-types";
 
-interface Props {
+interface SubcategoryMenuProps {
   category: CategoriesGetManyOutput[1];
   isOpen: boolean;
 }
 
-export const SubcategoryMenu = ({ category, isOpen }: Props) => {
+export function SubcategoryMenu({ category, isOpen }: SubcategoryMenuProps) {
   if (
     !isOpen ||
     !category.subcategories ||
@@ -30,7 +30,7 @@ export const SubcategoryMenu = ({ category, isOpen }: Props) => {
       {/* Invisible bridge to maintain hover */}
       <div className="h-3 w-60" />
       <div
-        className="w-60 -translate-x-[2px] -translate-y-[2px] overflow-hidden rounded-md border text-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]"
+        className="w-60 -translate-x-0.5 -translate-y-0.5 overflow-hidden rounded-md border text-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]"
         style={{ backgroundColor }}
       >
         <div>
@@ -47,4 +47,4 @@ export const SubcategoryMenu = ({ category, isOpen }: Props) => {
       </div>
     </div>
   );
-};
+}

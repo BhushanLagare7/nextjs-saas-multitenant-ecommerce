@@ -9,17 +9,17 @@ import { CategoriesGetManyOutput } from "@/modules/categories/types";
 
 import { SubcategoryMenu } from "./subcategory-menu";
 
-interface Props {
+interface CategoryDropdownProps {
   category: CategoriesGetManyOutput[1];
   isActive?: boolean;
   isNavigationHovered?: boolean;
 }
 
-export const CategoryDropdown = ({
+export function CategoryDropdown({
   category,
   isActive,
   isNavigationHovered,
-}: Props) => {
+}: CategoryDropdownProps) {
   const [isOpen, setIsOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
@@ -31,13 +31,6 @@ export const CategoryDropdown = ({
   };
 
   const onMouseLeave = () => setIsOpen(false);
-
-  // TODO: Potentially improve mobile
-  // const toggleDropdown = () => {
-  //   if (category.subcategories?.docs?.length) {
-  //     setIsOpen(!isOpen);
-  //   }
-  // };
 
   return (
     <div
@@ -53,7 +46,7 @@ export const CategoryDropdown = ({
             "hover:border-primary h-11 rounded-full border-transparent bg-transparent px-4 text-black hover:bg-white",
             isActive && !isNavigationHovered && "border-primary bg-white",
             isOpen &&
-              "border-primary -translate-x-[4px] -translate-y-[4px] bg-white shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]",
+              "border-primary -translate-x-1 -translate-y-1 bg-white shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]",
           )}
           variant="elevated"
         >
@@ -64,7 +57,7 @@ export const CategoryDropdown = ({
         {category.subcategories && category.subcategories.length > 0 && (
           <div
             className={cn(
-              "absolute -bottom-3 left-1/2 h-0 w-0 -translate-x-1/2 border-r-[10px] border-b-[10px] border-l-[10px] border-r-transparent border-b-black border-l-transparent opacity-0",
+              "absolute -bottom-3 left-1/2 h-0 w-0 -translate-x-1/2 border-r-10 border-b-10 border-l-10 border-r-transparent border-b-black border-l-transparent opacity-0",
               isOpen && "opacity-100",
             )}
           />
@@ -74,4 +67,4 @@ export const CategoryDropdown = ({
       <SubcategoryMenu category={category} isOpen={isOpen} />
     </div>
   );
-};
+}

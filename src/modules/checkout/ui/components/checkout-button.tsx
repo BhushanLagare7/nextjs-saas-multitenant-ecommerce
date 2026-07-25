@@ -13,11 +13,11 @@ interface CheckoutButtonProps {
   tenantSlug: string;
 }
 
-export const CheckoutButton = ({
+export function CheckoutButton({
   className,
   hideIfEmpty,
   tenantSlug,
-}: CheckoutButtonProps) => {
+}: CheckoutButtonProps) {
   const { totalItems } = useCart(tenantSlug);
 
   if (hideIfEmpty && totalItems === 0) return null;
@@ -29,4 +29,4 @@ export const CheckoutButton = ({
       </Link>
     </Button>
   );
-};
+}

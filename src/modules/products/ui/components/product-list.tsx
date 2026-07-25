@@ -12,13 +12,17 @@ import { useProductFilters } from "../../hooks/use-product-filters";
 
 import { ProductCard, ProductCardSkeleton } from "./product-card";
 
-interface Props {
+interface ProductListProps {
   category?: string;
   tenantSlug?: string;
   narrowView?: boolean;
 }
 
-export const ProductList = ({ category, tenantSlug, narrowView }: Props) => {
+export function ProductList({
+  category,
+  tenantSlug,
+  narrowView,
+}: ProductListProps) {
   const [filters] = useProductFilters();
 
   const trpc = useTRPC();
@@ -86,9 +90,13 @@ export const ProductList = ({ category, tenantSlug, narrowView }: Props) => {
       </div>
     </>
   );
-};
+}
 
-export const ProductListSkeleton = ({ narrowView }: Props) => {
+interface ProductListSkeletonProps {
+  narrowView?: boolean;
+}
+
+export function ProductListSkeleton({ narrowView }: ProductListSkeletonProps) {
   return (
     <div
       className={cn(
@@ -101,4 +109,4 @@ export const ProductListSkeleton = ({ narrowView }: Props) => {
       ))}
     </div>
   );
-};
+}

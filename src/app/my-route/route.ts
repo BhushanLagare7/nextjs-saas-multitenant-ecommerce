@@ -1,7 +1,7 @@
 import configPromise from "@payload-config";
 import { getPayload } from "payload";
 
-export const GET = async () => {
+export async function GET() {
   await getPayload({
     config: configPromise,
   });
@@ -9,4 +9,4 @@ export const GET = async () => {
   return Response.json({
     message: "This is an example of a custom route.",
   });
-};
+}

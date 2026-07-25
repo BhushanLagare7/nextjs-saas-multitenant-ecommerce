@@ -10,24 +10,21 @@ interface TagsFilterProps {
   onChange: (value: string[]) => void;
 }
 
-export const TagsFilter = ({ value, onChange }: TagsFilterProps) => {
+export function TagsFilter({ value, onChange }: TagsFilterProps) {
   const trpc = useTRPC();
-  const {
-    data,
-    isLoading,
-    fetchNextPage,
-    hasNextPage,
-    isFetchingNextPage
-  } = useInfiniteQuery(trpc.tags.getMany.infiniteQueryOptions(
-    {
-      limit: DEFAULT_LIMIT,
-    },
-    {
-      getNextPageParam: (lastPage) => {
-        return lastPage.docs.length > 0 ? lastPage.nextPage : undefined;
-      },
-    }
-  ));
+  const { data, isLoading, fetchNextPage, hasNextPage, isFetchingNextPage } =
+    useInfiniteQuery(
+      trpc.tags.getMany.infiniteQueryOptions(
+        {
+          limit: DEFAULT_LIMIT,
+        },
+        {
+          getNextPageParam: (lastPage) => {
+            return lastPage.docs.length > 0 ? lastPage.nextPage : undefined;
+          },
+        },
+      ),
+    );
 
   const onClick = (tag: string) => {
     if (value?.includes(tag)) {
@@ -48,7 +45,7 @@ export const TagsFilter = ({ value, onChange }: TagsFilterProps) => {
           page.docs.map((tag) => (
             <div
               key={tag.id}
-              className="flex items-center justify-between cursor-pointer"
+              className="flex cursor-pointer items-center justify-between"
               onClick={() => onClick(tag.name)}
             >
               <p className="font-medium">{tag.name}</p>
@@ -57,12 +54,12 @@ export const TagsFilter = ({ value, onChange }: TagsFilterProps) => {
                 onCheckedChange={() => onClick(tag.name)}
               />
             </div>
-          ))
+          )),
         )
       )}
       {hasNextPage && (
         <button
-          className="underline font-medium justify-start text-start disabled:opacity-50 cursor-pointer"
+          className="cursor-pointer justify-start text-start font-medium underline disabled:opacity-50"
           disabled={isFetchingNextPage}
           onClick={() => fetchNextPage()}
         >
@@ -71,4 +68,4 @@ export const TagsFilter = ({ value, onChange }: TagsFilterProps) => {
       )}
     </div>
   );
-};
+}

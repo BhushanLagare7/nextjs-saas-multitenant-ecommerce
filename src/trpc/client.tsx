@@ -37,11 +37,11 @@ function getUrl() {
   return `${base}/api/trpc`;
 }
 
-export function TRPCReactProvider(
-  props: Readonly<{
-    children: React.ReactNode;
-  }>,
-) {
+interface TRPCReactProviderProps {
+  children: React.ReactNode;
+}
+
+export function TRPCReactProvider({ children }: TRPCReactProviderProps) {
   // NOTE: Avoid useState when initializing the query client if you don't
   //       have a suspense boundary between this and the code that may
   //       suspend because React will throw away the client on the initial
@@ -61,7 +61,7 @@ export function TRPCReactProvider(
   return (
     <QueryClientProvider client={queryClient}>
       <TRPCProvider queryClient={queryClient} trpcClient={trpcClient}>
-        {props.children}
+        {children}
       </TRPCProvider>
     </QueryClientProvider>
   );
