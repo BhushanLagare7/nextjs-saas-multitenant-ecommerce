@@ -38,7 +38,7 @@ async function fetchProductAndReviewOrThrow(
   userId: string,
 ) {
   const [product, { docs: reviews }] = await Promise.all([
-    db.findByID({ collection: "products", id: productId }),
+    db.findByID({ collection: "products", id: productId, disableErrors: true }),
     db.find({
       collection: "reviews",
       limit: 1,
@@ -152,15 +152,12 @@ export const reviewsRouter = createTRPCRouter({
    * @returns The updated review document.
    */
   update: protectedProcedure
-    .input(
-      z
-        .object({ reviewId: z.string() })
-        .merge(reviewFieldsSchema),
-    )
+    .input(z.object({ reviewId: z.string() }).merge(reviewFieldsSchema))
     .mutation(async ({ input, ctx }) => {
       const existingReview = await ctx.db.findByID({
         collection: "reviews",
         id: input.reviewId,
+        disableErrors: true,
       });
 
       if (

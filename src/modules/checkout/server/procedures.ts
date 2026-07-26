@@ -84,7 +84,9 @@ export const checkoutRouter = createTRPCRouter({
 
   /**
    * Creates a Stripe Checkout session for purchasing one or more products
-   * belonging to a single tenant, applying the platform fee on top.
+   * belonging to a single tenant. The platform fee is deducted from the
+   * payment via `application_fee_amount`, not added as a customer-visible
+   * surcharge.
    *
    * @param input.productIds - IDs of the products to purchase (must be non-empty).
    * @param input.tenantSlug - Slug of the tenant selling the products.
@@ -107,6 +109,7 @@ export const checkoutRouter = createTRPCRouter({
         ctx.db.find({
           collection: "products",
           depth: 2,
+          pagination: false,
           where: {
             and: [
               {
@@ -139,7 +142,7 @@ export const checkoutRouter = createTRPCRouter({
         }),
       ]);
 
-      if (products.totalDocs !== input.productIds.length) {
+      if (products.docs.length !== input.productIds.length) {
         notFound("Products not found");
       }
 
@@ -239,6 +242,7 @@ export const checkoutRouter = createTRPCRouter({
       const data = await ctx.db.find({
         collection: "products",
         depth: 2, // Populate "category", "image", "tenant" & "tenant.image"
+        pagination: false,
         where: {
           and: [
             {
@@ -255,7 +259,7 @@ export const checkoutRouter = createTRPCRouter({
         },
       });
 
-      if (data.totalDocs !== input.ids.length) {
+      if (data.docs.length !== input.ids.length) {
         notFound("Products not found");
       }
 

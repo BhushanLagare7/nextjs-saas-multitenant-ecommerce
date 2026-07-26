@@ -2,6 +2,7 @@ import { TRPCError } from "@trpc/server";
 import z from "zod";
 
 import { DEFAULT_LIMIT } from "@/constants";
+import { groupReviewsByProduct } from "@/modules/reviews/utils";
 import { Media, Tenant } from "@/payload-types";
 import { createTRPCRouter, protectedProcedure } from "@/trpc/init";
 
@@ -113,7 +114,9 @@ export const libraryRouter = createTRPCRouter({
       // instead of one query per product (avoids N+1 queries).
       const reviewsData = await ctx.db.find({
         collection: "reviews",
+        depth: 0,
         pagination: false,
+        select: { rating: true, product: true },
         where: {
           product: {
             in: productsData.docs.map((doc) => doc.id),
@@ -121,29 +124,14 @@ export const libraryRouter = createTRPCRouter({
         },
       });
 
-      // Group reviews by their associated product id for O(1) lookup
-      // while summarizing per-product review data below.
-      const reviewsByProductId = new Map<string, typeof reviewsData.docs>();
-      for (const review of reviewsData.docs) {
-        const productId =
-          typeof review.product === "object"
-            ? review.product.id
-            : review.product;
-
-        const existing = reviewsByProductId.get(productId) ?? [];
-        existing.push(review);
-        reviewsByProductId.set(productId, existing);
-      }
+      // Group reviews by product and compute per-product count/rating.
+      const reviewsByProductId = groupReviewsByProduct(reviewsData.docs);
 
       // Attach summarized review count/rating to each product.
       const dataWithSummarizedReviews = productsData.docs.map((doc) => {
-        const productReviews = reviewsByProductId.get(doc.id) ?? [];
-        const reviewCount = productReviews.length;
-        const reviewRating =
-          reviewCount === 0
-            ? 0
-            : productReviews.reduce((acc, review) => acc + review.rating, 0) /
-              reviewCount;
+        const { reviewCount, reviewRating } = reviewsByProductId.get(
+          doc.id,
+        ) ?? { reviewCount: 0, reviewRating: 0 };
 
         return {
           ...doc,

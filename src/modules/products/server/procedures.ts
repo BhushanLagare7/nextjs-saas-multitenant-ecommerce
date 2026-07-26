@@ -5,6 +5,7 @@ import type { Sort, Where } from "payload";
 import z from "zod";
 
 import { DEFAULT_LIMIT } from "@/constants";
+import { groupReviewsByProduct } from "@/modules/reviews/utils";
 import { Category, Media, Tenant } from "@/payload-types";
 import { baseProcedure, createTRPCRouter } from "@/trpc/init";
 
@@ -27,12 +28,8 @@ const SORT_MAP: Partial<Record<(typeof sortValues)[number], Sort>> = {
  * from a flat list of review documents in a single pass.
  *
  * @param docs  - Raw review documents returned by Payload.
- * @param total - Canonical total count (`PaginatedDocs.totalDocs`).
  */
-function summariseReviews(
-  docs: Array<{ rating: number }>,
-  total: number,
-): {
+function summariseReviews(docs: Array<{ rating: number }>): {
   reviewRating: number;
   ratingDistribution: Record<1 | 2 | 3 | 4 | 5, number>;
 } {
@@ -44,7 +41,9 @@ function summariseReviews(
     5: 0,
   };
 
-  if (total === 0) {
+  const count = docs.length;
+
+  if (count === 0) {
     return {
       reviewRating: 0,
       ratingDistribution: ratingDistribution as Record<
@@ -69,12 +68,12 @@ function summariseReviews(
   // Convert raw counts to integer percentages.
   for (let i = 1; i <= 5; i++) {
     ratingDistribution[i] = Math.round(
-      ((ratingDistribution[i] ?? 0) / total) * 100,
+      ((ratingDistribution[i] ?? 0) / count) * 100,
     );
   }
 
   return {
-    reviewRating: ratingSum / total,
+    reviewRating: ratingSum / count,
     ratingDistribution: ratingDistribution as Record<1 | 2 | 3 | 4 | 5, number>,
   };
 }
@@ -142,7 +141,9 @@ export const productsRouter = createTRPCRouter({
           : null,
         ctx.db.find({
           collection: "reviews",
+          depth: 0,
           pagination: false,
+          select: { rating: true },
           where: { product: { equals: input.id } },
         }),
       ]);
@@ -150,7 +151,6 @@ export const productsRouter = createTRPCRouter({
       const isPurchased = !!ordersData?.docs[0];
       const { reviewRating, ratingDistribution } = summariseReviews(
         reviewsData.docs,
-        reviewsData.totalDocs,
       );
 
       return {
@@ -261,56 +261,36 @@ export const productsRouter = createTRPCRouter({
       // Batch-fetch all reviews for the returned products in a single query,
       // then group them in memory — avoids an N+1 pattern entirely.
       const productIds = data.docs.map((doc) => doc.id);
-      let reviewsByProduct: Record<
+      let reviewsByProductMap = new Map<
         string,
-        { totalRating: number; count: number }
-      > = {};
+        { reviewCount: number; reviewRating: number }
+      >();
 
       if (productIds.length > 0) {
         const reviewsData = await ctx.db.find({
           collection: "reviews",
+          depth: 0,
           pagination: false,
+          select: { rating: true, product: true },
           where: { product: { in: productIds } },
         });
 
-        reviewsByProduct = reviewsData.docs.reduce(
-          (acc, review) => {
-            // Payload can return a populated object or a raw string ID depending
-            // on query depth, so normalise to a plain ID string.
-            const productId =
-              typeof review.product === "object"
-                ? review.product.id
-                : review.product;
-
-            if (!productId) return acc;
-
-            if (!acc[productId]) {
-              acc[productId] = { totalRating: 0, count: 0 };
-            }
-
-            acc[productId].totalRating += review.rating;
-            acc[productId].count += 1;
-
-            return acc;
-          },
-          {} as Record<string, { totalRating: number; count: number }>,
-        );
+        reviewsByProductMap = groupReviewsByProduct(reviewsData.docs);
       }
 
       return {
         ...data,
         docs: data.docs.map((doc) => {
-          const { totalRating, count } = reviewsByProduct[doc.id] ?? {
-            totalRating: 0,
-            count: 0,
-          };
+          const { reviewCount, reviewRating } = reviewsByProductMap.get(
+            doc.id,
+          ) ?? { reviewCount: 0, reviewRating: 0 };
 
           return {
             ...doc,
             image: doc.image as Media | null,
             tenant: doc.tenant as Tenant & { image: Media | null },
-            reviewCount: count,
-            reviewRating: count > 0 ? totalRating / count : 0,
+            reviewCount,
+            reviewRating,
           };
         }),
       };
