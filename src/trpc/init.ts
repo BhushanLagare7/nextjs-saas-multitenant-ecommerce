@@ -2,7 +2,11 @@ import { cache } from "react";
 import { headers as getHeaders } from "next/headers";
 
 import config from "@payload-config";
-import { initTRPC, TRPCError } from "@trpc/server";
+import {
+  type inferProcedureBuilderResolverOptions,
+  initTRPC,
+  TRPCError,
+} from "@trpc/server";
 import { getPayload } from "payload";
 import superjson from "superjson";
 /**
@@ -53,3 +57,7 @@ export const protectedProcedure = baseProcedure.use(async ({ ctx, next }) => {
     },
   });
 });
+
+export type Context = inferProcedureBuilderResolverOptions<
+  typeof baseProcedure
+>["ctx"];
