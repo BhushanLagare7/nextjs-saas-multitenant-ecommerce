@@ -163,7 +163,7 @@ export function ProductView({ productId, tenantSlug }: ProductViewProps) {
                   </div>
                 </div>
                 <div className="mt-4 grid grid-cols-[auto_1fr_auto] gap-3">
-                  {[5, 4, 3, 2, 1].map((stars) => (
+                  {([5, 4, 3, 2, 1] as const).map((stars) => (
                     <Fragment key={stars}>
                       <div className="font-medium">
                         {stars} {stars === 1 ? "star" : "stars"}

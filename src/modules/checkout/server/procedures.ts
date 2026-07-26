@@ -14,7 +14,36 @@ import {
 
 import { CheckoutMetadata, ProductMetadata } from "../types";
 
+/** Base application URL used to build Stripe redirect links. */
+const APP_URL = process.env.NEXT_PUBLIC_APP_URL!;
+
+/**
+ * Throws a standardized tRPC `NOT_FOUND` error.
+ *
+ * @param message - Human-readable message describing what was not found.
+ */
+function notFound(message: string): never {
+  throw new TRPCError({
+    code: "NOT_FOUND",
+    message,
+  });
+}
+
+/**
+ * Router that handles Stripe-related checkout operations:
+ * - Seller account verification (Stripe Connect onboarding)
+ * - Product purchase / checkout session creation
+ * - Fetching products (with pricing info) for the checkout flow
+ */
 export const checkoutRouter = createTRPCRouter({
+  /**
+   * Generates a Stripe account onboarding link for the current user's tenant,
+   * allowing them to complete Stripe Connect verification.
+   *
+   * @throws {TRPCError} `NOT_FOUND` if the user or their tenant cannot be found.
+   * @throws {TRPCError} `BAD_REQUEST` if Stripe fails to return an account link URL.
+   * @returns The Stripe account onboarding URL.
+   */
   verify: protectedProcedure.mutation(async ({ ctx }) => {
     const user = await ctx.db.findByID({
       collection: "users",
@@ -23,10 +52,7 @@ export const checkoutRouter = createTRPCRouter({
     });
 
     if (!user) {
-      throw new TRPCError({
-        code: "NOT_FOUND",
-        message: "User not found",
-      });
+      notFound("User not found");
     }
 
     const tenantId = user.tenants?.[0]?.tenant as string; // This is an id because of depth: 0
@@ -36,16 +62,13 @@ export const checkoutRouter = createTRPCRouter({
     });
 
     if (!tenant) {
-      throw new TRPCError({
-        code: "NOT_FOUND",
-        message: "Tenant not found",
-      });
+      notFound("Tenant not found");
     }
 
     const accountLink = await stripe.accountLinks.create({
       account: tenant.stripeAccountId,
-      refresh_url: `${process.env.NEXT_PUBLIC_APP_URL!}/admin`,
-      return_url: `${process.env.NEXT_PUBLIC_APP_URL!}/admin`,
+      refresh_url: `${APP_URL}/admin`,
+      return_url: `${APP_URL}/admin`,
       type: "account_onboarding",
     });
 
@@ -58,6 +81,19 @@ export const checkoutRouter = createTRPCRouter({
 
     return { url: accountLink.url };
   }),
+
+  /**
+   * Creates a Stripe Checkout session for purchasing one or more products
+   * belonging to a single tenant, applying the platform fee on top.
+   *
+   * @param input.productIds - IDs of the products to purchase (must be non-empty).
+   * @param input.tenantSlug - Slug of the tenant selling the products.
+   *
+   * @throws {TRPCError} `NOT_FOUND` if any product or the tenant cannot be found.
+   * @throws {TRPCError} `BAD_REQUEST` if the tenant hasn't completed Stripe verification.
+   * @throws {TRPCError} `INTERNAL_SERVER_ERROR` if Stripe fails to return a checkout URL.
+   * @returns The Stripe Checkout session URL.
+   */
   purchase: protectedProcedure
     .input(
       z.object({
@@ -66,55 +102,51 @@ export const checkoutRouter = createTRPCRouter({
       }),
     )
     .mutation(async ({ ctx, input }) => {
-      const products = await ctx.db.find({
-        collection: "products",
-        depth: 2,
-        where: {
-          and: [
-            {
-              id: {
-                in: input.productIds,
+      // These two lookups are independent of each other, so run them concurrently.
+      const [products, tenantsData] = await Promise.all([
+        ctx.db.find({
+          collection: "products",
+          depth: 2,
+          where: {
+            and: [
+              {
+                id: {
+                  in: input.productIds,
+                },
               },
-            },
-            {
-              "tenant.slug": {
-                equals: input.tenantSlug,
+              {
+                "tenant.slug": {
+                  equals: input.tenantSlug,
+                },
               },
-            },
-            {
-              isArchived: {
-                not_equals: true,
+              {
+                isArchived: {
+                  not_equals: true,
+                },
               },
+            ],
+          },
+        }),
+        ctx.db.find({
+          collection: "tenants",
+          limit: 1,
+          pagination: false,
+          where: {
+            slug: {
+              equals: input.tenantSlug,
             },
-          ],
-        },
-      });
+          },
+        }),
+      ]);
 
       if (products.totalDocs !== input.productIds.length) {
-        throw new TRPCError({
-          code: "NOT_FOUND",
-          message: "Products not found",
-        });
+        notFound("Products not found");
       }
-
-      const tenantsData = await ctx.db.find({
-        collection: "tenants",
-        limit: 1,
-        pagination: false,
-        where: {
-          slug: {
-            equals: input.tenantSlug,
-          },
-        },
-      });
 
       const tenant = tenantsData.docs[0];
 
       if (!tenant) {
-        throw new TRPCError({
-          code: "NOT_FOUND",
-          message: "Tenant not found",
-        });
+        notFound("Tenant not found");
       }
 
       if (!tenant.stripeDetailsSubmitted) {
@@ -124,28 +156,31 @@ export const checkoutRouter = createTRPCRouter({
         });
       }
 
+      // Build the Stripe line items and compute the total amount in a single pass.
+      let totalAmount = 0;
       const lineItems: Stripe.Checkout.SessionCreateParams.LineItem[] =
-        products.docs.map((product) => ({
-          quantity: 1,
-          price_data: {
-            unit_amount: product.price * 100, // Stripe handles prices in cents
-            currency: "usd",
-            product_data: {
-              name: product.name,
-              metadata: {
-                stripeAccountId: tenant.stripeAccountId,
-                id: product.id,
-                name: product.name,
-                price: product.price,
-              } as ProductMetadata,
-            },
-          },
-        }));
+        products.docs.map((product) => {
+          const unitAmount = product.price * 100; // Stripe handles prices in cents
+          totalAmount += unitAmount;
 
-      const totalAmount = products.docs.reduce(
-        (acc, item) => acc + item.price * 100,
-        0,
-      );
+          return {
+            quantity: 1,
+            price_data: {
+              unit_amount: unitAmount,
+              currency: "usd",
+              product_data: {
+                name: product.name,
+                metadata: {
+                  stripeAccountId: tenant.stripeAccountId,
+                  id: product.id,
+                  name: product.name,
+                  price: product.price,
+                } as ProductMetadata,
+              },
+            },
+          };
+        });
+
       const platformFeeAmount = Math.round(
         totalAmount * (PLATFORM_FEE_PERCENTAGE / 100),
       );
@@ -183,6 +218,17 @@ export const checkoutRouter = createTRPCRouter({
 
       return { url: checkout.url };
     }),
+
+  /**
+   * Fetches a list of products by ID (excluding archived ones), along with
+   * their populated `category`, `image`, `tenant`, and `tenant.image` relations,
+   * plus the aggregate total price of all returned products.
+   *
+   * @param input.ids - IDs of the products to fetch.
+   *
+   * @throws {TRPCError} `NOT_FOUND` if any of the requested products cannot be found.
+   * @returns The paginated product data plus a computed `totalPrice`.
+   */
   getProducts: baseProcedure
     .input(
       z.object({
@@ -210,10 +256,7 @@ export const checkoutRouter = createTRPCRouter({
       });
 
       if (data.totalDocs !== input.ids.length) {
-        throw new TRPCError({
-          code: "NOT_FOUND",
-          message: "Products not found",
-        });
+        notFound("Products not found");
       }
 
       const totalPrice = data.docs.reduce((acc, product) => {
@@ -223,7 +266,7 @@ export const checkoutRouter = createTRPCRouter({
 
       return {
         ...data,
-        totalPrice: totalPrice,
+        totalPrice,
         docs: data.docs.map((doc) => ({
           ...doc,
           image: doc.image as Media | null,
