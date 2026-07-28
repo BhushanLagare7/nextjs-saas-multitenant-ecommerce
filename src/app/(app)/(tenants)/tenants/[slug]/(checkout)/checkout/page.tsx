@@ -1,20 +1,20 @@
 import { CheckoutView } from "@/modules/checkout/ui/views/checkout-view";
 
 /**
- * Interface for the Tenants Checkout page props.
+ * Interface for the Tenants Slug Checkout page props.
  */
-interface TenantsCheckoutPageProps {
+interface TenantsSlugCheckoutPageProps {
   /** Dynamic route parameters */
   params: Promise<{ slug: string }>;
 }
 
 /**
- * Tenants checkout page.
+ * Tenants slug checkout page.
  * Displays the checkout view for a specific tenant.
  */
-export default async function TenantsCheckoutPage({
+export default async function TenantsSlugCheckoutPage({
   params,
-}: TenantsCheckoutPageProps) {
+}: TenantsSlugCheckoutPageProps) {
   // Extract tenant slug from route parameters
   const { slug } = await params;
 

@@ -9,20 +9,20 @@ import { HydrateClient, prefetch, trpc } from "@/trpc/server";
 export const dynamic = "force-dynamic";
 
 /**
- * Interface for the Tenants Product ID page props.
+ * Interface for the Tenants Slug Products Product ID page props.
  */
-interface TenantsProductIdPageProps {
+interface TenantsSlugProductsProductIdPageProps {
   /** Dynamic route parameters */
   params: Promise<{ productId: string; slug: string }>;
 }
 
 /**
- * Tenants product detail page.
+ * Tenants slug products product detail page.
  * Prefetches the tenant data on the server for SSR hydration.
  */
-export default async function TenantsProductIdPage({
+export default async function TenantsSlugProductsProductIdPage({
   params,
-}: TenantsProductIdPageProps) {
+}: TenantsSlugProductsProductIdPageProps) {
   const { productId, slug } = await params;
 
   // Prefetch the tenant data for SSR hydration

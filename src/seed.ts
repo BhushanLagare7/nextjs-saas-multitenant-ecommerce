@@ -168,12 +168,12 @@ const categories: CategorySeed[] = [
  * Retrieves the first document in `collection` whose `field` equals `value`.
  * Only a single document is requested since callers only ever need `docs[0]`.
  */
-async function findFirstByField(
+async function findFirstByField<T = Record<string, unknown>>(
   payload: BasePayload,
   collection: CollectionSlug,
   field: string,
   value: string,
-) {
+): Promise<T | undefined> {
   const { docs } = await payload.find({
     collection,
     where: {
@@ -184,32 +184,32 @@ async function findFirstByField(
     limit: 1,
   });
 
-  return docs[0];
+  return docs[0] as T | undefined;
 }
 
 /**
  * Ensures the admin tenant exists, creating it if necessary.
  *
- * NOTE: to preserve original behaviour, a new Stripe account is created on
- * every run regardless of whether the tenant already exists.
+ * A new Stripe account is only created when the tenant does not yet exist,
+ * so rerunning the seed reuses the existing tenant without leaking accounts.
  */
 async function ensureAdminTenant(payload: BasePayload): Promise<Tenant> {
-  const existingTenant = (await findFirstByField(
+  const existingTenant = await findFirstByField<Tenant>(
     payload,
     "tenants",
     "slug",
     ADMIN_TENANT_SLUG,
-  )) as Tenant | undefined;
+  );
+
+  if (existingTenant) {
+    console.log("Admin tenant already exists, reusing it.");
+    return existingTenant;
+  }
 
   const adminAccount = await stripe.accounts.create({});
 
   if (!adminAccount.id) {
     throw new Error("Failed to create Stripe account");
-  }
-
-  if (existingTenant) {
-    console.log("Admin tenant already exists, reusing it.");
-    return existingTenant;
   }
 
   const tenant = await payload.create({
@@ -265,12 +265,12 @@ async function ensureParentCategory(
   payload: BasePayload,
   category: CategorySeed,
 ): Promise<Category> {
-  const existing = (await findFirstByField(
+  const existing = await findFirstByField<Category>(
     payload,
     "categories",
     "slug",
     category.slug,
-  )) as Category | undefined;
+  );
 
   if (existing) {
     console.log(

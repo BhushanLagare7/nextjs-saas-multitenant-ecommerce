@@ -78,6 +78,25 @@ async function handleCheckoutSessionCompleted(
 
   const lineItems = expandedSession.line_items.data as ExpandedLineItem[];
 
+  // Idempotency guard: skip order creation if this session was already processed
+  const existingOrders = await payload.find({
+    collection: "orders",
+    where: {
+      stripeCheckoutSessionId: { equals: session.id },
+      ...(event.account
+        ? { stripeAccountId: { equals: event.account } }
+        : {}),
+    },
+    limit: 1,
+  });
+
+  if (existingOrders.docs.length > 0) {
+    console.log(
+      `⚠️ Orders for session ${session.id} already exist, skipping duplicate.`,
+    );
+    return;
+  }
+
   for (const item of lineItems) {
     await payload.create({
       collection: "orders",

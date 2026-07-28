@@ -32,7 +32,7 @@ const poppins = Poppins({
 
 /**
  * Sign In Component
- * Handles user authentication via tRPC and redirects to the dashboard on success.
+ * Handles user authentication via tRPC and redirects to the home page on success.
  */
 export function SignInView() {
   const router = useRouter();

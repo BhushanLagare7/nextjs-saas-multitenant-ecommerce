@@ -8,9 +8,9 @@ import { HydrateClient, prefetch, trpc } from "@/trpc/server";
 export const dynamic = "force-dynamic";
 
 /**
- * Interface for the Tenants home page props.
+ * Interface for the Tenants Slug page props.
  */
-interface TenantsHomePageProps {
+interface TenantsSlugPageProps {
   /** URL query parameters */
   searchParams: Promise<SearchParams>;
   /** Dynamic route parameters */
@@ -18,13 +18,13 @@ interface TenantsHomePageProps {
 }
 
 /**
- * Tenants home page.
+ * Tenants slug page.
  * Prefetches the first page of products on the server for SSR hydration.
  */
-export default async function TenantsHomePage({
+export default async function TenantsSlugPage({
   params,
   searchParams,
-}: TenantsHomePageProps) {
+}: TenantsSlugPageProps) {
   // Extract tenant slug from route parameters
   const { slug } = await params;
   // Load product filters from search parameters

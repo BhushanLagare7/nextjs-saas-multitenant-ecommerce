@@ -37,7 +37,7 @@ export async function generateAuthCookie({
         }
 
         return {
-          sameSite: "none" as const, // Required for cross-site requests
+          sameSite: "lax" as const, // Allows subdomain sharing while preventing CSRF
           domain: rootDomain, // Allows the cookie to be read across all subdomains
           secure: true, // Enforces HTTPS-only transmission
         };
