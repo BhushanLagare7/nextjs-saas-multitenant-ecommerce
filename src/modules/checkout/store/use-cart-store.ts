@@ -6,6 +6,7 @@ interface TenantCart {
 }
 
 interface CartState {
+  // Maps each tenant/store slug to its respective cart data
   tenantCarts: Record<string, TenantCart>;
   addProduct: (tenantSlug: string, productId: string) => void;
   removeProduct: (tenantSlug: string, productId: string) => void;
@@ -13,10 +14,16 @@ interface CartState {
   clearAllCarts: () => void;
 }
 
+/**
+ * Global Zustand store for multi-tenant cart management.
+ * State is automatically persisted to the browser's localStorage under the key 'storegrid-cart'
+ * so users don't lose their items when closing the tab.
+ */
 export const useCartStore = create<CartState>()(
   persist(
     (set) => ({
       tenantCarts: {},
+
       addProduct: (tenantSlug, productId) =>
         set((state) => ({
           tenantCarts: {
@@ -29,6 +36,7 @@ export const useCartStore = create<CartState>()(
             },
           },
         })),
+
       removeProduct: (tenantSlug, productId) =>
         set((state) => ({
           tenantCarts: {
@@ -41,15 +49,18 @@ export const useCartStore = create<CartState>()(
             },
           },
         })),
+
       clearCart: (tenantSlug) =>
         set((state) => ({
           tenantCarts: {
             ...state.tenantCarts,
+            // Replaces the specific tenant's cart with an empty array rather than deleting the key
             [tenantSlug]: {
               productIds: [],
             },
           },
         })),
+
       clearAllCarts: () =>
         set({
           tenantCarts: {},

@@ -10,6 +10,10 @@ interface CheckoutSidebarProps {
   disabled?: boolean;
 }
 
+/**
+ * Sidebar showing order total and checkout button.
+ * Displays error message if checkout was canceled.
+ */
 export function CheckoutSidebar({
   total,
   onPurchase,
@@ -22,6 +26,7 @@ export function CheckoutSidebar({
         <h4 className="text-lg font-medium">Total</h4>
         <p className="text-lg font-medium">{formatCurrency(total)}</p>
       </div>
+
       <div className="flex items-center justify-center p-4">
         <Button
           className="bg-primary hover:text-primary w-full text-base text-white hover:bg-pink-400"
@@ -33,6 +38,7 @@ export function CheckoutSidebar({
           Checkout
         </Button>
       </div>
+
       {isCanceled && (
         <div className="flex items-center justify-center border-t p-4">
           <div className="flex w-full items-center rounded border border-red-400 bg-red-100 px-4 py-3 font-medium">

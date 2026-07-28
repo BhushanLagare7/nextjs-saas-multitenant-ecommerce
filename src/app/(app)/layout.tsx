@@ -1,5 +1,10 @@
 import "./globals.css";
 
+/**
+ * @file layout.tsx
+ * @description Application layout component - Root layout for the entire application.
+ * This layout wraps all pages and provides global providers and context.
+ */
 import type { Metadata } from "next";
 import { DM_Sans } from "next/font/google";
 
@@ -13,6 +18,9 @@ const dmSans = DM_Sans({
   variable: "--font-sans",
 });
 
+/**
+ * @description Root layout metadata - SEO and Open Graph information.
+ */
 export const metadata: Metadata = {
   title: {
     default: "Storegrid - The Complete SaaS E-commerce Platform",
@@ -25,10 +33,20 @@ export const metadata: Metadata = {
   },
 };
 
+/**
+ * @interface AppLayoutProps
+ * @description Interface for the application layout component props.
+ */
 interface AppLayoutProps {
+  /** Child React nodes to render within the layout */
   children: React.ReactNode;
 }
 
+/**
+ * @description Application layout component - Root layout for the entire application.
+ * This layout wraps all pages and provides global providers and context.
+ * @param props - Component props containing children
+ */
 export default function AppLayout({ children }: AppLayoutProps) {
   return (
     <html lang="en">

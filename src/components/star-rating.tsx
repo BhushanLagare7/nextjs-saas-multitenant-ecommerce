@@ -5,13 +5,21 @@ import { cn } from "@/lib/utils";
 const MAX_RATING = 5;
 const MIN_RATING = 0;
 
+/** Props for the read-only StarRating component. */
 interface StarRatingProps {
+  /** The rating score to display. Automatically clamped between 0 and 5. */
   rating: number;
+  /** Additional CSS classes for the wrapper container. */
   className?: string;
+  /** Additional CSS classes applied directly to the Star icons. */
   iconClassName?: string;
+  /** Optional text to display alongside the stars (e.g., "(42 reviews)"). */
   text?: string;
 }
 
+/**
+ * A display-only component that renders a static 5-star rating.
+ */
 export function StarRating({
   rating,
   className,

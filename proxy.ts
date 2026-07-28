@@ -15,10 +15,16 @@ export const config = {
 
 export default async function middleware(req: NextRequest) {
   const url = req.nextUrl;
-  // Extract the hostname (e.g., "antonio.funroad.com" or "john.localhost:3000")
+  // Extract the hostname (e.g., "antonio.storegrid.com" or "john.localhost:3000")
   const hostname = req.headers.get("host") || "";
 
-  const rootDomain = process.env.NEXT_PUBLIC_ROOT_DOMAIN || "";
+  const rootDomain = process.env.NEXT_PUBLIC_ROOT_DOMAIN;
+
+  if (!rootDomain) {
+    throw new Error(
+      "CRITICAL: NEXT_PUBLIC_ROOT_DOMAIN is not set in the environment variables.",
+    );
+  }
 
   if (hostname.endsWith(`.${rootDomain}`)) {
     const tenantSlug = hostname.replace(`.${rootDomain}`, "");

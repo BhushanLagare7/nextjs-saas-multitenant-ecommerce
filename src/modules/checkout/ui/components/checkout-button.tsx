@@ -9,10 +9,15 @@ import { useCart } from "../../hooks/use-cart";
 
 interface CheckoutButtonProps {
   className?: string;
+  /** Hide button completely when cart is empty */
   hideIfEmpty?: boolean;
   tenantSlug: string;
 }
 
+/**
+ * Cart button shown in navigation.
+ * Displays item count and links to checkout.
+ */
 export function CheckoutButton({
   className,
   hideIfEmpty,

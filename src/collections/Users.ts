@@ -19,6 +19,30 @@ const defaultTenantArrayField = tenantsArrayField({
   },
 });
 
+/**
+ * Validates NEXT_PUBLIC_ROOT_DOMAIN and returns production cookie options
+ * for cross-subdomain auth support.
+ */
+function getProductionCookieOptions(): {
+  sameSite: "Lax";
+  domain: string;
+  secure: true;
+} {
+  const rootDomain = process.env.NEXT_PUBLIC_ROOT_DOMAIN;
+
+  if (!rootDomain) {
+    throw new Error(
+      "CRITICAL: NEXT_PUBLIC_ROOT_DOMAIN is not set in the environment variables.",
+    );
+  }
+
+  return {
+    sameSite: "Lax" as const,
+    domain: rootDomain,
+    secure: true,
+  };
+}
+
 export const Users: CollectionConfig = {
   slug: "users",
   access: {
@@ -37,11 +61,8 @@ export const Users: CollectionConfig = {
   },
   auth: {
     cookies: {
-      ...(process.env.NODE_ENV !== "development" && {
-        sameSite: "None",
-        domain: process.env.NEXT_PUBLIC_ROOT_DOMAIN,
-        secure: true,
-      }),
+      ...(process.env.NODE_ENV !== "development" &&
+        getProductionCookieOptions()),
     },
   },
   fields: [

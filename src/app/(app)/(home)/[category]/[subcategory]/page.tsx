@@ -8,12 +8,18 @@ import { HydrateClient, prefetch, trpc } from "@/trpc/server";
 export const dynamic = "force-dynamic";
 
 interface CategorySubcategoryPageProps {
+  /** Dynamic route parameters */
   params: Promise<{
     subcategory: string;
   }>;
+  /** URL search parameters used for product filtering/sorting */
   searchParams: Promise<SearchParams>;
 }
 
+/**
+ * Subcategory product listing page.
+ * Parses URL filters and prefetches the initial page of products on the server for SSR hydration.
+ */
 export default async function CategorySubcategoryPage({
   params,
   searchParams,
@@ -21,6 +27,7 @@ export default async function CategorySubcategoryPage({
   const { subcategory } = await params;
   const filters = await loadProductFilters(searchParams);
 
+  // Prefetch the first page of products for the subcategory
   void prefetch(
     trpc.products.getMany.infiniteQueryOptions(
       {

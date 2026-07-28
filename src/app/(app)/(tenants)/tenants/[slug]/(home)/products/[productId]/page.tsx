@@ -8,15 +8,24 @@ import { HydrateClient, prefetch, trpc } from "@/trpc/server";
 
 export const dynamic = "force-dynamic";
 
-interface TenantsProductIdPageProps {
+/**
+ * Interface for the Tenants Slug Products Product ID page props.
+ */
+interface TenantsSlugProductsProductIdPageProps {
+  /** Dynamic route parameters */
   params: Promise<{ productId: string; slug: string }>;
 }
 
-export default async function TenantsProductIdPage({
+/**
+ * Tenants slug products product detail page.
+ * Prefetches the tenant data on the server for SSR hydration.
+ */
+export default async function TenantsSlugProductsProductIdPage({
   params,
-}: TenantsProductIdPageProps) {
+}: TenantsSlugProductsProductIdPageProps) {
   const { productId, slug } = await params;
 
+  // Prefetch the tenant data for SSR hydration
   void prefetch(
     trpc.tenants.getOne.queryOptions({
       slug,
@@ -25,6 +34,7 @@ export default async function TenantsProductIdPage({
 
   return (
     <HydrateClient>
+      {/* Suspense boundary for fallback UI while data loads */}
       <Suspense fallback={<ProductViewSkeleton />}>
         <ProductView productId={productId} tenantSlug={slug} />
       </Suspense>

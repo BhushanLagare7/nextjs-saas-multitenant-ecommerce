@@ -69,3 +69,51 @@ return (
 - The `prefetch` helper automatically detects whether the query is infinite or standard and dispatches to the correct underlying method.
 - Multiple `prefetch()` calls are allowed before a single `<HydrateClient>` wrapper — the shared per-request `QueryClient` accumulates all prefetched data.
 - `<HydrateClient>` dehydrates the shared request-scoped `QueryClient` and injects it into the React tree via `<HydrationBoundary>` automatically.
+
+## 6. Environment Variable Validation (Fail-Fast)
+
+**Never use `process.env.VARIABLE_NAME` directly** where it may be `undefined`. Before initializing any service (Stripe, OAuth, databases, etc.) or using an environment variable, you **must** explicitly check if it exists. If it is missing or empty, throw a descriptive `CRITICAL:` error immediately. This applies to both server-side and `NEXT_PUBLIC_` client-side variables.
+
+### Why
+
+- TypeScript types `process.env.*` as `string | undefined`. Non-null assertions (`!`) and empty-string fallbacks (`|| ""`) silently mask misconfiguration.
+- A missing variable should crash the app **immediately** at startup with a clear message, not cause cryptic failures deep in business logic.
+
+### ❌ Forbidden Patterns
+
+```typescript
+// Non-null assertion — hides undefined from TypeScript, crashes at runtime
+const secret = process.env.STRIPE_SECRET_KEY!;
+
+// Empty-string fallback — app starts but connects to nothing
+const dbUrl = process.env.DATABASE_URL || "";
+
+// Unsafe cast — lies to TypeScript about the type
+const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET as string;
+```
+
+### ✅ Required Pattern
+
+```typescript
+const secretKey = process.env.STRIPE_SECRET_KEY;
+
+if (!secretKey) {
+  throw new Error("CRITICAL: STRIPE_SECRET_KEY is not set in the environment variables.");
+}
+
+// TypeScript now strictly types secretKey as `string`, avoiding `undefined` errors
+export const stripe = new Stripe(secretKey, {
+  apiVersion: "2026-06-24.dahlia",
+  typescript: true,
+});
+```
+
+### Rules
+
+- Always extract `process.env.VARIABLE_NAME` into a `const` first.
+- Immediately check if the value is falsy (`!value`).
+- Throw an `Error` with a `"CRITICAL: VARIABLE_NAME is not set in the environment variables."` message.
+- Use the validated constant in all subsequent code — never re-read `process.env` for the same variable.
+- `process.env.NODE_ENV` is always injected by Next.js and does **not** need validation.
+- Boolean feature flags (e.g., `NEXT_PUBLIC_ENABLE_SUBDOMAIN_ROUTING`) that default to `false` when absent do **not** need a throw — treat missing as `false`.
+
