@@ -24,7 +24,7 @@ A multi-tenant SaaS e-commerce platform built with Next.js 16 (App Router), Payl
 
 ## Architecture
 
-```
+```text
 src/
 ├── app/                    # Next.js App Router
 │   ├── (app)/              # Main application route group
@@ -82,7 +82,7 @@ src/
 
 Each feature module in `src/modules/<name>/` follows a consistent internal structure:
 
-```
+```text
 modules/<name>/
 ├── hooks/          # Custom React hooks (client-side)
 ├── server/
@@ -99,8 +99,8 @@ modules/<name>/
 ### Multi-Tenant Routing
 
 - **Development**: Path-based — `http://localhost:3000/tenants/my-store`
-- **Production** (when `NEXT_PUBLIC_ENABLE_SUBDOMAIN_ROUTING=true`): Subdomain-based — `https://my-store.yourdomain.com`
-- Middleware in `proxy.ts` rewrites subdomain requests to internal `/tenants/[slug]` paths.
+- **Production** (when `NEXT_PUBLIC_ENABLE_SUBDOMAIN_ROUTING=true` and `NEXT_PUBLIC_ROOT_DOMAIN` is set): Subdomain-based — `https://my-store.yourdomain.com`
+- Middleware in `proxy.ts` rewrites subdomain requests to internal `/tenants/[slug]` paths when `NEXT_PUBLIC_ENABLE_SUBDOMAIN_ROUTING=true`.
 
 ---
 
@@ -127,7 +127,7 @@ bun run db:seed
 
 ## Environment Variables
 
-Create a `.env` file in the project root. All variables are validated at startup with fail-fast checks.
+Create a `.env` file in the project root. All variables are validated before use with fail-fast checks.
 
 ### Required
 
@@ -144,7 +144,7 @@ Create a `.env` file in the project root. All variables are validated at startup
 
 | Variable                               | Description                                                                   | Default |
 | -------------------------------------- | ----------------------------------------------------------------------------- | ------- |
-| `NEXT_PUBLIC_ROOT_DOMAIN`              | Root domain for subdomain routing (e.g. `localhost:3000` or `yourdomain.com`) | —       |
+| `NEXT_PUBLIC_ROOT_DOMAIN`              | Root domain for subdomain routing (e.g. `localhost:3000` or `yourdomain.com`). Required when subdomain routing is enabled. | —       |
 | `NEXT_PUBLIC_ENABLE_SUBDOMAIN_ROUTING` | Enable subdomain-based tenant routing                                         | `false` |
 
 ---

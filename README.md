@@ -4,7 +4,7 @@
 
 # Storegrid
 
-### Multi-tenant SaaS e-commerce platform built with Next.js, Payload CMS, and Stripe Connect
+## Multi-tenant SaaS e-commerce platform built with Next.js, Payload CMS, and Stripe Connect
 
 <br />
 
@@ -141,7 +141,7 @@ bun install
 
 ### 2. Configure Environment
 
-Create a `.env` file in the project root:
+Create a `.env` file in the project root. Required variables are validated before use:
 
 ```env
 # ── Required ──────────────────────────────────────────
@@ -189,7 +189,7 @@ You're up and running:
 
 ## 🏗️ Architecture
 
-```
+```text
 src/
 ├── app/                     # Next.js App Router
 │   ├── (app)/
@@ -222,7 +222,7 @@ src/
 
 Each feature module follows a consistent internal structure:
 
-```
+```text
 modules/<name>/
 ├── hooks/               # Client-side React hooks
 ├── server/
@@ -243,7 +243,7 @@ modules/<name>/
 | 🧑‍💻 Development | Path-based | `http://localhost:3000/tenants/my-store` |
 | 🌍 Production  | Subdomain  | `https://my-store.yourdomain.com`        |
 
-Set `NEXT_PUBLIC_ENABLE_SUBDOMAIN_ROUTING=true` for production. The middleware in `proxy.ts` rewrites subdomain requests to internal `/tenants/[slug]` paths.
+Set `NEXT_PUBLIC_ENABLE_SUBDOMAIN_ROUTING=true` and `NEXT_PUBLIC_ROOT_DOMAIN=yourdomain.com` for production subdomain routing. The middleware in `proxy.ts` rewrites subdomain requests to internal `/tenants/[slug]` paths when subdomain routing is enabled.
 
 <br />
 
