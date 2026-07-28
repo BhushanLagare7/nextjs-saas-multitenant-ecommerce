@@ -14,9 +14,12 @@ export const config = {
 };
 
 export default async function middleware(req: NextRequest) {
-  const url = req.nextUrl;
-  // Extract the hostname (e.g., "antonio.storegrid.com" or "john.localhost:3000")
-  const hostname = req.headers.get("host") || "";
+  const isSubdomainRoutingEnabled =
+    process.env.NEXT_PUBLIC_ENABLE_SUBDOMAIN_ROUTING === "true";
+
+  if (!isSubdomainRoutingEnabled) {
+    return NextResponse.next();
+  }
 
   const rootDomain = process.env.NEXT_PUBLIC_ROOT_DOMAIN;
 
@@ -25,6 +28,10 @@ export default async function middleware(req: NextRequest) {
       "CRITICAL: NEXT_PUBLIC_ROOT_DOMAIN is not set in the environment variables.",
     );
   }
+
+  const url = req.nextUrl;
+  // Extract the hostname (e.g., "antonio.storegrid.com" or "john.localhost:3000")
+  const hostname = req.headers.get("host") || "";
 
   if (hostname.endsWith(`.${rootDomain}`)) {
     const tenantSlug = hostname.replace(`.${rootDomain}`, "");
