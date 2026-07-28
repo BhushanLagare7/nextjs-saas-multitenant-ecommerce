@@ -30,24 +30,31 @@ const poppins = Poppins({
   weight: ["700"],
 });
 
+/**
+ * Sign In Component
+ * Handles user authentication via tRPC and redirects to the dashboard on success.
+ */
 export function SignInView() {
   const router = useRouter();
 
   const trpc = useTRPC();
   const queryClient = useQueryClient();
 
+  // tRPC mutation for logging in the user and refreshing the session state
   const login = useMutation(
     trpc.auth.login.mutationOptions({
       onError: (error) => {
         toast.error(error.message);
       },
       onSuccess: async () => {
+        // Invalidate current session cache to reflect authenticated state
         await queryClient.invalidateQueries(trpc.auth.session.queryFilter());
         router.push("/");
       },
     }),
   );
 
+  // Form setup using react-hook-form and Zod validation
   const form = useForm<z.infer<typeof loginSchema>>({
     mode: "all",
     resolver: zodResolver(loginSchema),
@@ -125,6 +132,7 @@ export function SignInView() {
           </form>
         </Form>
       </div>
+      {/* Decorative background for large screens */}
       <div
         className="hidden h-screen w-full lg:col-span-2 lg:block"
         style={{

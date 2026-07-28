@@ -1,15 +1,25 @@
 import { Navbar } from "@/modules/checkout/ui/components/navbar";
 import { Footer } from "@/modules/tenants/ui/components/footer";
 
+/**
+ * Interface for the Tenants Checkout layout props.
+ */
 interface TenantsCheckoutLayoutProps {
+  /** Child components to render */
   children: React.ReactNode;
+  /** Dynamic route parameters */
   params: Promise<{ slug: string }>;
 }
 
+/**
+ * Tenants checkout layout.
+ * Provides a consistent layout for tenant checkout pages with navbar and footer.
+ */
 export default async function TenantsCheckoutLayout({
   children,
   params,
 }: TenantsCheckoutLayoutProps) {
+  // Extract tenant slug from route parameters
   const { slug } = await params;
 
   return (

@@ -15,7 +15,13 @@ import {
 import { CheckoutMetadata, ProductMetadata } from "../types";
 
 /** Base application URL used to build Stripe redirect links. */
-const APP_URL = process.env.NEXT_PUBLIC_APP_URL!;
+const APP_URL = process.env.NEXT_PUBLIC_APP_URL;
+
+if (!APP_URL) {
+  throw new Error(
+    "CRITICAL: NEXT_PUBLIC_APP_URL is not set in the environment variables.",
+  );
+}
 
 /**
  * Throws a standardized tRPC `NOT_FOUND` error.

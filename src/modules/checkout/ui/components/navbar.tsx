@@ -7,6 +7,9 @@ interface NavbarProps {
   slug: string;
 }
 
+/**
+ * Simple navigation bar for the checkout page.
+ */
 export function Navbar({ slug }: NavbarProps) {
   return (
     <nav className="h-20 border-b bg-white font-medium">

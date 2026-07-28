@@ -1,9 +1,40 @@
 import config from "@payload-config";
+import type { BasePayload, CollectionSlug } from "payload";
 import { getPayload } from "payload";
+
+import type { Category, Tenant } from "@/payload-types";
 
 import { stripe } from "./lib/stripe";
 
-const categories = [
+/** Shape of a subcategory entry in the seed data. */
+interface Subcategory {
+  name: string;
+  slug: string;
+}
+
+/** Shape of a top-level category entry in the seed data. */
+interface CategorySeed {
+  name: string;
+  slug: string;
+  color?: string;
+  subcategories?: Subcategory[];
+}
+
+/** Slug and name used for the default admin tenant. */
+const ADMIN_TENANT_SLUG = "admin";
+
+/** Credentials used for the default admin user. */
+const ADMIN_USER_EMAIL = "admin@demo.com";
+const ADMIN_USER_PASSWORD = "demo";
+const ADMIN_USER_USERNAME = "admin";
+
+/**
+ * Seed data describing the full category tree (top-level categories plus
+ * their nested subcategories) that should exist in the CMS.
+ *
+ * @type {CategorySeed[]}
+ */
+const categories: CategorySeed[] = [
   {
     name: "All",
     slug: "all",
@@ -14,17 +45,11 @@ const categories = [
     slug: "business-money",
     subcategories: [
       { name: "Accounting", slug: "accounting" },
-      {
-        name: "Entrepreneurship",
-        slug: "entrepreneurship",
-      },
+      { name: "Entrepreneurship", slug: "entrepreneurship" },
       { name: "Gigs & Side Projects", slug: "gigs-side-projects" },
       { name: "Investing", slug: "investing" },
       { name: "Management & Leadership", slug: "management-leadership" },
-      {
-        name: "Marketing & Sales",
-        slug: "marketing-sales",
-      },
+      { name: "Marketing & Sales", slug: "marketing-sales" },
       { name: "Networking, Careers & Jobs", slug: "networking-careers-jobs" },
       { name: "Personal Finance", slug: "personal-finance" },
       { name: "Real Estate", slug: "real-estate" },
@@ -139,18 +164,42 @@ const categories = [
   },
 ];
 
-async function seed() {
-  const payload = await getPayload({ config });
-
-  // Check if admin tenant already exists
-  const existingTenants = await payload.find({
-    collection: "tenants",
+/**
+ * Retrieves the first document in `collection` whose `field` equals `value`.
+ * Only a single document is requested since callers only ever need `docs[0]`.
+ */
+async function findFirstByField(
+  payload: BasePayload,
+  collection: CollectionSlug,
+  field: string,
+  value: string,
+) {
+  const { docs } = await payload.find({
+    collection,
     where: {
-      slug: {
-        equals: "admin",
+      [field]: {
+        equals: value,
       },
     },
+    limit: 1,
   });
+
+  return docs[0];
+}
+
+/**
+ * Ensures the admin tenant exists, creating it if necessary.
+ *
+ * NOTE: to preserve original behaviour, a new Stripe account is created on
+ * every run regardless of whether the tenant already exists.
+ */
+async function ensureAdminTenant(payload: BasePayload): Promise<Tenant> {
+  const existingTenant = (await findFirstByField(
+    payload,
+    "tenants",
+    "slug",
+    ADMIN_TENANT_SLUG,
+  )) as Tenant | undefined;
 
   const adminAccount = await stripe.accounts.create({});
 
@@ -158,110 +207,148 @@ async function seed() {
     throw new Error("Failed to create Stripe account");
   }
 
-  let adminTenant = existingTenants.docs[0];
-  if (adminTenant) {
+  if (existingTenant) {
     console.log("Admin tenant already exists, reusing it.");
-  } else {
-    // Create admin tenant
-    adminTenant = await payload.create({
-      collection: "tenants",
-      data: {
-        name: "admin",
-        slug: "admin",
-        stripeAccountId: adminAccount.id,
-      },
-    });
-    console.log("Created admin tenant.");
+    return existingTenant;
   }
 
-  // Check if admin user already exists
-  const existingUsers = await payload.find({
-    collection: "users",
-    where: {
-      email: {
-        equals: "admin@demo.com",
-      },
+  const tenant = await payload.create({
+    collection: "tenants",
+    data: {
+      name: ADMIN_TENANT_SLUG,
+      slug: ADMIN_TENANT_SLUG,
+      stripeAccountId: adminAccount.id,
     },
   });
+  console.log("Created admin tenant.");
+  return tenant;
+}
 
-  if (existingUsers.docs.length > 0) {
+/**
+ * Ensures the default admin user exists, creating and linking it to the
+ * given tenant if necessary.
+ */
+async function ensureAdminUser(payload: BasePayload, adminTenant: Tenant) {
+  const existingUser = await findFirstByField(
+    payload,
+    "users",
+    "email",
+    ADMIN_USER_EMAIL,
+  );
+
+  if (existingUser) {
     console.log("Admin user already exists, skipping creation.");
-  } else {
-    // Create admin user
-    await payload.create({
-      collection: "users",
-      data: {
-        email: "admin@demo.com",
-        password: "demo",
-        roles: ["super-admin"],
-        username: "admin",
-        tenants: [
-          {
-            tenant: adminTenant.id,
-          },
-        ],
-      },
-    });
-    console.log("Created admin user.");
+    return;
   }
 
-  for (const category of categories) {
-    const existingParent = await payload.find({
-      collection: "categories",
-      where: {
-        slug: {
-          equals: category.slug,
+  await payload.create({
+    collection: "users",
+    data: {
+      email: ADMIN_USER_EMAIL,
+      password: ADMIN_USER_PASSWORD,
+      roles: ["super-admin"],
+      username: ADMIN_USER_USERNAME,
+      tenants: [
+        {
+          tenant: adminTenant.id,
         },
-      },
-    });
+      ],
+    },
+  });
+  console.log("Created admin user.");
+}
 
-    let parentCategory = existingParent.docs[0];
-    if (parentCategory) {
-      console.log(
-        `Parent category '${category.name}' already exists, reusing it.`,
-      );
-    } else {
-      parentCategory = await payload.create({
-        collection: "categories",
-        data: {
-          name: category.name,
-          slug: category.slug,
-          color: category.color,
-          parent: null,
-        },
-      });
-      console.log(`Created parent category '${category.name}'.`);
-    }
+/**
+ * Ensures a single top-level category exists, creating it if necessary.
+ */
+async function ensureParentCategory(
+  payload: BasePayload,
+  category: CategorySeed,
+): Promise<Category> {
+  const existing = (await findFirstByField(
+    payload,
+    "categories",
+    "slug",
+    category.slug,
+  )) as Category | undefined;
+
+  if (existing) {
+    console.log(
+      `Parent category '${category.name}' already exists, reusing it.`,
+    );
+    return existing;
+  }
+
+  const created = await payload.create({
+    collection: "categories",
+    data: {
+      name: category.name,
+      slug: category.slug,
+      color: category.color,
+      parent: null,
+    },
+  });
+  console.log(`Created parent category '${category.name}'.`);
+  return created;
+}
+
+/**
+ * Ensures a single subcategory exists under the given parent category,
+ * creating it if necessary.
+ */
+async function ensureSubCategory(
+  payload: BasePayload,
+  subCategory: Subcategory,
+  parentCategory: Category,
+) {
+  const existing = await findFirstByField(
+    payload,
+    "categories",
+    "slug",
+    subCategory.slug,
+  );
+
+  if (existing) {
+    console.log(`Subcategory '${subCategory.name}' already exists, skipping.`);
+    return;
+  }
+
+  await payload.create({
+    collection: "categories",
+    data: {
+      name: subCategory.name,
+      slug: subCategory.slug,
+      parent: parentCategory.id,
+    },
+  });
+  console.log(`Created subcategory '${subCategory.name}'.`);
+}
+
+/**
+ * Seeds the database with the default admin tenant, admin user and the full
+ * category/subcategory tree. Safe to run multiple times: existing records
+ * are detected via their unique slug/email and reused rather than
+ * duplicated.
+ *
+ * @returns {Promise<void>}
+ */
+async function seed() {
+  const payload = await getPayload({ config });
+
+  const adminTenant = await ensureAdminTenant(payload);
+  await ensureAdminUser(payload, adminTenant);
+
+  for (const category of categories) {
+    const parentCategory = await ensureParentCategory(payload, category);
 
     for (const subCategory of category.subcategories || []) {
-      const existingSub = await payload.find({
-        collection: "categories",
-        where: {
-          slug: {
-            equals: subCategory.slug,
-          },
-        },
-      });
-
-      if (existingSub.docs.length > 0) {
-        console.log(
-          `Subcategory '${subCategory.name}' already exists, skipping.`,
-        );
-      } else {
-        await payload.create({
-          collection: "categories",
-          data: {
-            name: subCategory.name,
-            slug: subCategory.slug,
-            parent: parentCategory.id,
-          },
-        });
-        console.log(`Created subcategory '${subCategory.name}'.`);
-      }
+      await ensureSubCategory(payload, subCategory, parentCategory);
     }
   }
 }
 
+// Script entry point: run the seed routine and exit with an appropriate
+// status code so it can be used reliably in CI/CD pipelines.
 try {
   await seed();
   console.log("Seeding completed successfully");

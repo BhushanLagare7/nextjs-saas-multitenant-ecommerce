@@ -37,11 +37,21 @@ export const Users: CollectionConfig = {
   },
   auth: {
     cookies: {
-      ...(process.env.NODE_ENV !== "development" && {
-        sameSite: "None",
-        domain: process.env.NEXT_PUBLIC_ROOT_DOMAIN,
-        secure: true,
-      }),
+      ...(process.env.NODE_ENV !== "development" && (() => {
+        const rootDomain = process.env.NEXT_PUBLIC_ROOT_DOMAIN;
+
+        if (!rootDomain) {
+          throw new Error(
+            "CRITICAL: NEXT_PUBLIC_ROOT_DOMAIN is not set in the environment variables.",
+          );
+        }
+
+        return {
+          sameSite: "None" as const,
+          domain: rootDomain,
+          secure: true,
+        };
+      })()),
     },
   },
   fields: [

@@ -1,5 +1,10 @@
 "use client";
 
+/**
+ * Main checkout page view.
+ * Displays cart items, handles purchase flow, and manages success/cancel states.
+ */
+
 import { useEffect } from "react";
 import { useRouter } from "next/navigation";
 
@@ -26,12 +31,15 @@ export function CheckoutView({ tenantSlug }: CheckoutViewProps) {
 
   const trpc = useTRPC();
   const queryClient = useQueryClient();
+
+  // Fetch products currently in the user's cart
   const { data, error, isLoading } = useQuery(
     trpc.checkout.getProducts.queryOptions({
       ids: productIds,
     }),
   );
 
+  // Purchase mutation - redirects to payment provider on success
   const purchase = useMutation(
     trpc.checkout.purchase.mutationOptions({
       onMutate: () => {
@@ -45,12 +53,12 @@ export function CheckoutView({ tenantSlug }: CheckoutViewProps) {
           // TODO: Modify when subdomains enabled
           router.push("/sign-in");
         }
-
         toast.error(error.message);
       },
     }),
   );
 
+  // Handle successful checkout (webhook callback)
   useEffect(() => {
     if (states.success) {
       setStates({ success: false, cancel: false });
@@ -67,6 +75,7 @@ export function CheckoutView({ tenantSlug }: CheckoutViewProps) {
     trpc.library.getMany,
   ]);
 
+  // Clear invalid products from cart
   useEffect(() => {
     if (error?.data?.code === "NOT_FOUND") {
       clearCart();

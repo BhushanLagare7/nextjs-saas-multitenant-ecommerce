@@ -31,12 +31,17 @@ const poppins = Poppins({
   weight: ["700"],
 });
 
+/**
+ * Sign Up Component
+ * Handles account creation and provides real-time feedback for store URL generation.
+ */
 export function SignUpView() {
   const router = useRouter();
 
   const trpc = useTRPC();
   const queryClient = useQueryClient();
 
+  // tRPC mutation for registering a new user
   const register = useMutation(
     trpc.auth.register.mutationOptions({
       onError: (error) => {
@@ -63,9 +68,9 @@ export function SignUpView() {
     register.mutate(values);
   };
 
+  // Watch username input to display a dynamic preview of the user's store URL
   const username = useWatch({ control: form.control, name: "username" });
   const usernameErrors = form.formState.errors.username;
-
   const showPreview = username && !usernameErrors;
 
   return (
@@ -106,6 +111,7 @@ export function SignUpView() {
                   <FormControl>
                     <Input {...field} />
                   </FormControl>
+                  {/* Dynamic Store URL Preview */}
                   <FormDescription
                     className={cn("hidden", showPreview && "block")}
                   >

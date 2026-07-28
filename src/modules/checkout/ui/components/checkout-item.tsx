@@ -14,6 +14,9 @@ interface CheckoutItemProps {
   onRemove: () => void;
 }
 
+/**
+ * Renders a single product row in the checkout list.
+ */
 export function CheckoutItem({
   isLast,
   imageUrl,

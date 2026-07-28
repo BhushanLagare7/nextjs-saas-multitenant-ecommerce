@@ -6,13 +6,21 @@ import { StarIcon } from "lucide-react";
 
 import { cn } from "@/lib/utils";
 
+/** Props for the interactive StarPicker component. */
 interface StarPickerProps {
+  /** The currently selected rating value (0-5). */
   value?: number;
+  /** Callback fired when a star is clicked. */
   onChange?: (value: number) => void;
+  /** If true, disables interaction and reduces opacity. */
   disabled?: boolean;
+  /** Additional CSS classes for the container. */
   className?: string;
 }
 
+/**
+ * An interactive 5-star rating input that handles hover states and selection.
+ */
 export function StarPicker({
   value = 0,
   onChange,

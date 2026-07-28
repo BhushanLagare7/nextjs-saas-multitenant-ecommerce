@@ -20,6 +20,27 @@ import { isSuperAdmin } from "./lib/access";
 const filename = fileURLToPath(import.meta.url);
 const dirname = path.dirname(filename);
 
+const payloadSecret = process.env.PAYLOAD_SECRET;
+if (!payloadSecret) {
+  throw new Error(
+    "CRITICAL: PAYLOAD_SECRET is not set in the environment variables.",
+  );
+}
+
+const databaseUrl = process.env.DATABASE_URL;
+if (!databaseUrl) {
+  throw new Error(
+    "CRITICAL: DATABASE_URL is not set in the environment variables.",
+  );
+}
+
+const blobReadWriteToken = process.env.BLOB_READ_WRITE_TOKEN;
+if (!blobReadWriteToken) {
+  throw new Error(
+    "CRITICAL: BLOB_READ_WRITE_TOKEN is not set in the environment variables.",
+  );
+}
+
 export default buildConfig({
   admin: {
     user: Users.slug,
@@ -41,12 +62,12 @@ export default buildConfig({
     Reviews,
   ],
   editor: lexicalEditor(),
-  secret: process.env.PAYLOAD_SECRET || "",
+  secret: payloadSecret,
   typescript: {
     outputFile: path.resolve(dirname, "payload-types.ts"),
   },
   db: mongooseAdapter({
-    url: process.env.DATABASE_URL || "",
+    url: databaseUrl,
   }),
   sharp,
   plugins: [
@@ -67,7 +88,7 @@ export default buildConfig({
         media: true,
       },
       // Token provided by Vercel once Blob storage is added to your Vercel project
-      token: process.env.BLOB_READ_WRITE_TOKEN,
+      token: blobReadWriteToken,
     }),
   ],
 });
